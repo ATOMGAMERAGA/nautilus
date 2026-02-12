@@ -1,6 +1,8 @@
 # Build stage
 FROM node:20-slim AS builder
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install build dependencies for mediasoup and prisma
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -31,6 +33,8 @@ RUN npm run build
 
 # Runtime stage
 FROM node:20-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install runtime dependencies
 # mediasoup worker needs these libraries

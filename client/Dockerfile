@@ -1,6 +1,8 @@
 # Build stage
 FROM node:20-slim AS builder
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /app
 
 # Copy package files

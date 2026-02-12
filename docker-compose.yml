@@ -53,9 +53,10 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./server/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nautilus"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -d nautilus -U nautilus"]
+      interval: 10s
       timeout: 5s
       retries: 5
     networks:
