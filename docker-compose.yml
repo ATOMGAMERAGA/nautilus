@@ -44,21 +44,21 @@ services:
 
   # Database
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: nautilus-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: nautilus
       POSTGRES_USER: nautilus
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-super_secure_password_change_me}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./server/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "nautilus", "-d", "nautilus"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U nautilus -d nautilus"]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
     networks:
       - nautilus-net
 
