@@ -2,12 +2,12 @@
 FROM node:20-slim AS builder
 
 # Install build dependencies for mediasoup and prisma
-RUN apt-get update && apt-get install -y 
-    python3 
-    make 
-    gcc 
-    g++ 
-    openssl 
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    gcc \
+    g++ \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -34,13 +34,13 @@ FROM node:20-slim
 
 # Install runtime dependencies
 # mediasoup worker needs these libraries
-RUN apt-get update && apt-get install -y 
-    python3 
-    make 
-    gcc 
-    g++ 
-    openssl 
-    ffmpeg 
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    gcc \
+    g++ \
+    openssl \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
