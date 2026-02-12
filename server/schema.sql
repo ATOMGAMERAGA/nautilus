@@ -14,6 +14,8 @@ CREATE TABLE users (
     is_bot          BOOLEAN DEFAULT FALSE,
     is_banned       BOOLEAN DEFAULT FALSE,          -- Platform geneli ban
     ban_reason      TEXT,
+    two_factor_secret      TEXT,
+    is_two_factor_enabled BOOLEAN DEFAULT FALSE,
     -- banned_by       UUID REFERENCES users(id),  -- Added later to avoid circular dependency
     banned_at       TIMESTAMPTZ,
     created_at      TIMESTAMPTZ DEFAULT NOW(),
