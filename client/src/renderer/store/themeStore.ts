@@ -1,0 +1,17 @@
+import { create } from 'zustand';
+
+type Theme = 'dark' | 'light' | 'contrast';
+
+interface ThemeState {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+}
+
+export const useThemeStore = create<ThemeState>((set) => ({
+  theme: (localStorage.getItem('theme') as Theme) || 'dark',
+  setTheme: (theme) => {
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
+    set({ theme });
+  },
+}));

@@ -1,0 +1,743 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model attachments {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  message_id   String?   @db.Uuid
+  filename     String    @db.VarChar(255)
+  file_url     String
+  file_size    BigInt?
+  content_type String?   @db.VarChar(100)
+  width        Int?
+  height       Int?
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  messages     messages? @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model audit_logs {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id    String?   @db.Uuid
+  executor_id String?   @db.Uuid
+  action_type String    @db.VarChar(50)
+  target_id   String?   @db.Uuid
+  target_type String?   @db.VarChar(50)
+  changes     Json?
+  reason      String?
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  users       users?    @relation(fields: [executor_id], references: [id], onUpdate: NoAction)
+  guilds      guilds?   @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([guild_id, created_at(sort: Desc)], map: "idx_audit_guild")
+}
+
+model auto_mod_actions {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rule_id        String?         @db.Uuid
+  action_type    String          @db.VarChar(30)
+  metadata       Json?           @default("{}")
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  auto_mod_rules auto_mod_rules? @relation(fields: [rule_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model auto_mod_logs {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id        String?         @db.Uuid
+  rule_id         String?         @db.Uuid
+  user_id         String?         @db.Uuid
+  channel_id      String?         @db.Uuid
+  message_id      String?         @db.Uuid
+  message_content String?
+  matched_keyword String?
+  action_taken    String?         @db.VarChar(30)
+  created_at      DateTime?       @default(now()) @db.Timestamptz(6)
+  channels        channels?       @relation(fields: [channel_id], references: [id], onUpdate: NoAction)
+  guilds          guilds?         @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  auto_mod_rules  auto_mod_rules? @relation(fields: [rule_id], references: [id], onUpdate: NoAction)
+  users           users?          @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+}
+
+model auto_mod_rules {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id         String?            @db.Uuid
+  name             String             @db.VarChar(100)
+  creator_id       String?            @db.Uuid
+  enabled          Boolean?           @default(true)
+  event_type       String             @db.VarChar(30)
+  trigger_type     String             @db.VarChar(30)
+  trigger_metadata Json               @default("{}")
+  exempt_roles     String[]           @default([]) @db.Uuid
+  exempt_channels  String[]           @default([]) @db.Uuid
+  created_at       DateTime?          @default(now()) @db.Timestamptz(6)
+  auto_mod_actions auto_mod_actions[]
+  auto_mod_logs    auto_mod_logs[]
+  users            users?             @relation(fields: [creator_id], references: [id], onUpdate: NoAction)
+  guilds           guilds?            @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model badges {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code        String        @unique @db.VarChar(50)
+  name        String        @db.VarChar(100)
+  description String?
+  icon_url    String
+  color       String?       @db.VarChar(7)
+  priority    Int?          @default(0)
+  is_system   Boolean?      @default(true)
+  created_at  DateTime?     @default(now()) @db.Timestamptz(6)
+  user_badges user_badges[]
+}
+
+model bans {
+  guild_id                    String    @db.Uuid
+  user_id                     String    @db.Uuid
+  reason                      String?
+  banned_by                   String?   @db.Uuid
+  created_at                  DateTime? @default(now()) @db.Timestamptz(6)
+  users_bans_banned_byTousers users?    @relation("bans_banned_byTousers", fields: [banned_by], references: [id], onUpdate: NoAction)
+  guilds                      guilds    @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_bans_user_idTousers   users     @relation("bans_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([guild_id, user_id])
+}
+
+model channel_permissions {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channel_id  String?   @db.Uuid
+  target_id   String    @db.Uuid
+  target_type String    @db.VarChar(10)
+  allow       BigInt?   @default(0)
+  deny        BigInt?   @default(0)
+  channels    channels? @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model channels {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id              String?                 @db.Uuid
+  name                  String                  @db.VarChar(100)
+  topic                 String?
+  type                  String                  @db.VarChar(20)
+  position              Int?                    @default(0)
+  parent_id             String?                 @db.Uuid
+  is_nsfw               Boolean?                @default(false)
+  slowmode              Int?                    @default(0)
+  bitrate               Int?                    @default(64000)
+  user_limit            Int?                    @default(0)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  auto_mod_logs         auto_mod_logs[]
+  channel_permissions   channel_permissions[]
+  guilds                guilds?                 @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  channels              channels?               @relation("channelsTochannels", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_channels        channels[]              @relation("channelsTochannels")
+  invites               invites[]
+  messages              messages[]
+  notification_settings notification_settings[]
+  read_states           read_states[]
+  scheduled_events      scheduled_events[]
+  threads               threads[]
+  voice_logs            voice_logs[]
+  voice_states          voice_states[]
+  webhooks              webhooks[]
+}
+
+model custom_emojis {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id    String?   @db.Uuid
+  name        String    @db.VarChar(32)
+  image_url   String
+  uploader_id String?   @db.Uuid
+  is_animated Boolean?  @default(false)
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  guilds      guilds?   @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users?    @relation(fields: [uploader_id], references: [id], onUpdate: NoAction)
+}
+
+model dm_call_participants {
+  call_id         String    @db.Uuid
+  user_id         String    @db.Uuid
+  joined_at       DateTime? @default(now()) @db.Timestamptz(6)
+  left_at         DateTime? @db.Timestamptz(6)
+  is_muted        Boolean?  @default(false)
+  is_deafened     Boolean?  @default(false)
+  is_video        Boolean?  @default(false)
+  is_screen_share Boolean?  @default(false)
+  dm_calls        dm_calls  @relation(fields: [call_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([call_id, user_id])
+}
+
+model dm_calls {
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dm_channel_id        String?                @db.Uuid
+  initiator_id         String?                @db.Uuid
+  type                 String                 @db.VarChar(10)
+  status               String?                @default("ringing") @db.VarChar(20)
+  started_at           DateTime?              @db.Timestamptz(6)
+  ended_at             DateTime?              @db.Timestamptz(6)
+  duration_sec         Int?
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
+  dm_call_participants dm_call_participants[]
+  dm_channels          dm_channels?           @relation(fields: [dm_channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                users?                 @relation(fields: [initiator_id], references: [id], onUpdate: NoAction)
+
+  @@index([dm_channel_id, created_at(sort: Desc)], map: "idx_dm_calls_channel")
+}
+
+model dm_channels {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type            String?      @default("dm") @db.VarChar(10)
+  name            String?      @db.VarChar(100)
+  icon_url        String?
+  owner_id        String?      @db.Uuid
+  last_message_id String?      @db.Uuid
+  created_at      DateTime?    @default(now()) @db.Timestamptz(6)
+  dm_calls        dm_calls[]
+  users           users?       @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dm_members      dm_members[]
+}
+
+model dm_members {
+  dm_channel_id String      @db.Uuid
+  user_id       String      @db.Uuid
+  is_closed     Boolean?    @default(false)
+  last_read_at  DateTime?   @db.Timestamptz(6)
+  notifications String?     @default("all") @db.VarChar(20)
+  dm_channels   dm_channels @relation(fields: [dm_channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([dm_channel_id, user_id])
+}
+
+model event_subscribers {
+  event_id         String           @db.Uuid
+  user_id          String           @db.Uuid
+  scheduled_events scheduled_events @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users            users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([event_id, user_id])
+}
+
+model friendships {
+  id                                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                            String?   @db.Uuid
+  friend_id                          String?   @db.Uuid
+  status                             String?   @default("pending") @db.VarChar(20)
+  created_at                         DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                         DateTime? @default(now()) @db.Timestamptz(6)
+  users_friendships_friend_idTousers users?    @relation("friendships_friend_idTousers", fields: [friend_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_friendships_user_idTousers   users?    @relation("friendships_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, friend_id])
+  @@index([friend_id, status], map: "idx_friendships_friend")
+  @@index([user_id, status], map: "idx_friendships_user")
+}
+
+model guild_folder_items {
+  folder_id     String        @db.Uuid
+  guild_id      String        @db.Uuid
+  position      Int?          @default(0)
+  guild_folders guild_folders @relation(fields: [folder_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guilds        guilds        @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([folder_id, guild_id])
+}
+
+model guild_folders {
+  id                 String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id            String?              @db.Uuid
+  name               String?              @db.VarChar(100)
+  color              String?              @db.VarChar(7)
+  position           Int?                 @default(0)
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  guild_folder_items guild_folder_items[]
+  users              users?               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guild_positions    guild_positions[]
+}
+
+model guild_members {
+  guild_id    String    @db.Uuid
+  user_id     String    @db.Uuid
+  nickname    String?   @db.VarChar(32)
+  joined_at   DateTime? @default(now()) @db.Timestamptz(6)
+  is_muted    Boolean?  @default(false)
+  is_deafened Boolean?  @default(false)
+  guilds      guilds    @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([guild_id, user_id])
+}
+
+model guild_positions {
+  user_id       String         @db.Uuid
+  guild_id      String         @db.Uuid
+  position      Int?           @default(0)
+  folder_id     String?        @db.Uuid
+  guild_folders guild_folders? @relation(fields: [folder_id], references: [id], onUpdate: NoAction)
+  guilds        guilds         @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, guild_id])
+}
+
+model guilds {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String                  @db.VarChar(100)
+  icon_url              String?
+  banner_url            String?
+  description           String?
+  owner_id              String?                 @db.Uuid
+  region                String?                 @default("auto") @db.VarChar(50)
+  verification_level    Int?                    @default(0)
+  default_channel_id    String?                 @db.Uuid
+  member_count          Int?                    @default(0)
+  boost_count           Int?                    @default(0)
+  created_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?               @default(now()) @db.Timestamptz(6)
+  audit_logs            audit_logs[]
+  auto_mod_logs         auto_mod_logs[]
+  auto_mod_rules        auto_mod_rules[]
+  bans                  bans[]
+  channels              channels[]
+  custom_emojis         custom_emojis[]
+  guild_folder_items    guild_folder_items[]
+  guild_members         guild_members[]
+  guild_positions       guild_positions[]
+  users                 users?                  @relation(fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  invites               invites[]
+  member_roles          member_roles[]
+  notification_settings notification_settings[]
+  roles                 roles[]
+  scheduled_events      scheduled_events[]
+  threads               threads[]
+  voice_logs            voice_logs[]
+  voice_states          voice_states[]
+  webhooks              webhooks[]
+}
+
+model invites {
+  code         String    @id @db.VarChar(10)
+  guild_id     String?   @db.Uuid
+  channel_id   String?   @db.Uuid
+  inviter_id   String?   @db.Uuid
+  max_uses     Int?      @default(0)
+  uses         Int?      @default(0)
+  max_age      Int?      @default(86400)
+  is_temporary Boolean?  @default(false)
+  expires_at   DateTime? @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  channels     channels? @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guilds       guilds?   @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users        users?    @relation(fields: [inviter_id], references: [id], onUpdate: NoAction)
+}
+
+model login_history {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String?   @db.Uuid
+  ip_address     String?   @db.Inet
+  device_info    String?
+  location       String?
+  success        Boolean
+  failure_reason String?   @db.VarChar(50)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  users          users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model member_roles {
+  guild_id String @db.Uuid
+  user_id  String @db.Uuid
+  role_id  String @db.Uuid
+  guilds   guilds @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  roles    roles  @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users    users  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([guild_id, user_id, role_id])
+}
+
+model messages {
+  id             String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channel_id     String?                  @db.Uuid
+  author_id      String?                  @db.Uuid
+  content        String?
+  type           String?                  @default("default") @db.VarChar(20)
+  reference_id   String?                  @db.Uuid
+  is_pinned      Boolean?                 @default(false)
+  is_edited      Boolean?                 @default(false)
+  edited_at      DateTime?                @db.Timestamptz(6)
+  created_at     DateTime?                @default(now()) @db.Timestamptz(6)
+  search_vector  Unsupported("tsvector")?
+  attachments    attachments[]
+  users          users?                   @relation(fields: [author_id], references: [id], onUpdate: NoAction)
+  channels       channels?                @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  messages       messages?                @relation("messagesTomessages", fields: [reference_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_messages messages[]               @relation("messagesTomessages")
+  reactions      reactions[]
+  read_states    read_states[]
+  threads        threads[]
+  url_embeds     url_embeds[]
+
+  @@index([channel_id, created_at(sort: Desc)], map: "idx_messages_channel")
+  @@index([search_vector], map: "idx_messages_search", type: Gin)
+}
+
+model notification_settings {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String?   @db.Uuid
+  guild_id          String?   @db.Uuid
+  channel_id        String?   @db.Uuid
+  level             String?   @default("all") @db.VarChar(20)
+  suppress_everyone Boolean?  @default(false)
+  suppress_roles    Boolean?  @default(false)
+  muted_until       DateTime? @db.Timestamptz(6)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  channels          channels? @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guilds            guilds?   @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users             users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, guild_id, channel_id])
+}
+
+model notifications {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String?   @db.Uuid
+  type           String    @db.VarChar(30)
+  title          String?
+  body           String?
+  reference_id   String?   @db.Uuid
+  reference_type String?   @db.VarChar(30)
+  is_read        Boolean?  @default(false)
+  created_at     DateTime? @default(now()) @db.Timestamptz(6)
+  users          users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, is_read, created_at(sort: Desc)], map: "idx_notifications_user")
+}
+
+model platform_announcements {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  author_id  String?   @db.Uuid
+  title      String    @db.VarChar(200)
+  content    String
+  type       String?   @default("info") @db.VarChar(20)
+  is_active  Boolean?  @default(true)
+  pinned     Boolean?  @default(false)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users?    @relation(fields: [author_id], references: [id], onUpdate: NoAction)
+}
+
+model platform_audit_logs {
+  id                                              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  executor_id                                     String?   @db.Uuid
+  action                                          String    @db.VarChar(50)
+  target_user_id                                  String?   @db.Uuid
+  target_type                                     String?   @db.VarChar(50)
+  details                                         Json?
+  reason                                          String?
+  ip_address                                      String?   @db.Inet
+  created_at                                      DateTime? @default(now()) @db.Timestamptz(6)
+  users_platform_audit_logs_executor_idTousers    users?    @relation("platform_audit_logs_executor_idTousers", fields: [executor_id], references: [id], onUpdate: NoAction)
+  users_platform_audit_logs_target_user_idTousers users?    @relation("platform_audit_logs_target_user_idTousers", fields: [target_user_id], references: [id], onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_platform_audit")
+}
+
+model reactions {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  message_id String?   @db.Uuid
+  user_id    String?   @db.Uuid
+  emoji      String    @db.VarChar(100)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  messages   messages? @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([message_id, user_id, emoji])
+}
+
+model read_states {
+  user_id         String    @db.Uuid
+  channel_id      String    @db.Uuid
+  last_message_id String?   @db.Uuid
+  mention_count   Int?      @default(0)
+  last_read_at    DateTime? @default(now()) @db.Timestamptz(6)
+  channels        channels  @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  messages        messages? @relation(fields: [last_message_id], references: [id], onUpdate: NoAction)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, channel_id])
+}
+
+model refresh_tokens {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id     String?   @db.Uuid
+  token_hash  String
+  device_info String?
+  ip_address  String?   @db.Inet
+  expires_at  DateTime  @db.Timestamptz(6)
+  is_revoked  Boolean?  @default(false)
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_refresh_user")
+}
+
+model roles {
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id       String?        @db.Uuid
+  name           String         @db.VarChar(100)
+  color          String?        @db.VarChar(7)
+  icon_url       String?
+  position       Int?           @default(0)
+  permissions    BigInt?        @default(0)
+  is_hoisted     Boolean?       @default(false)
+  is_mentionable Boolean?       @default(false)
+  is_default     Boolean?       @default(false)
+  created_at     DateTime?      @default(now()) @db.Timestamptz(6)
+  member_roles   member_roles[]
+  guilds         guilds?        @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model scheduled_events {
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id          String?             @db.Uuid
+  channel_id        String?             @db.Uuid
+  creator_id        String?             @db.Uuid
+  name              String              @db.VarChar(100)
+  description       String?
+  image_url         String?
+  location          String?
+  entity_type       String              @db.VarChar(20)
+  status            String?             @default("scheduled") @db.VarChar(20)
+  start_time        DateTime            @db.Timestamptz(6)
+  end_time          DateTime?           @db.Timestamptz(6)
+  interested_count  Int?                @default(0)
+  created_at        DateTime?           @default(now()) @db.Timestamptz(6)
+  event_subscribers event_subscribers[]
+  channels          channels?           @relation(fields: [channel_id], references: [id], onUpdate: NoAction)
+  users             users?              @relation(fields: [creator_id], references: [id], onUpdate: NoAction)
+  guilds            guilds?             @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model thread_members {
+  thread_id            String    @db.Uuid
+  user_id              String    @db.Uuid
+  last_read_message_id String?   @db.Uuid
+  joined_at            DateTime? @default(now()) @db.Timestamptz(6)
+  threads              threads   @relation(fields: [thread_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([thread_id, user_id])
+}
+
+model threads {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parent_channel_id    String?          @db.Uuid
+  guild_id             String?          @db.Uuid
+  name                 String           @db.VarChar(100)
+  creator_id           String?          @db.Uuid
+  message_id           String?          @db.Uuid
+  type                 String?          @default("public") @db.VarChar(20)
+  archived             Boolean?         @default(false)
+  auto_archive_minutes Int?             @default(1440)
+  locked               Boolean?         @default(false)
+  message_count        Int?             @default(0)
+  member_count         Int?             @default(0)
+  last_message_at      DateTime?        @db.Timestamptz(6)
+  archived_at          DateTime?        @db.Timestamptz(6)
+  created_at           DateTime?        @default(now()) @db.Timestamptz(6)
+  thread_members       thread_members[]
+  users                users?           @relation(fields: [creator_id], references: [id], onUpdate: NoAction)
+  guilds               guilds?          @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  messages             messages?        @relation(fields: [message_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  channels             channels?        @relation(fields: [parent_channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model url_embeds {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  message_id    String?   @db.Uuid
+  url           String
+  type          String?   @default("link") @db.VarChar(20)
+  title         String?
+  description   String?
+  thumbnail_url String?
+  site_name     String?
+  author_name   String?
+  color         String?   @db.VarChar(7)
+  video_url     String?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  messages      messages? @relation(fields: [message_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model user_activities {
+  user_id    String    @db.Uuid
+  type       String    @db.VarChar(20)
+  name       String
+  details    String?
+  state      String?
+  url        String?
+  emoji      String?   @db.VarChar(100)
+  started_at DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at DateTime? @db.Timestamptz(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, type])
+}
+
+model user_badges {
+  user_id                             String    @db.Uuid
+  badge_id                            String    @db.Uuid
+  granted_by                          String?   @db.Uuid
+  granted_at                          DateTime? @default(now()) @db.Timestamptz(6)
+  badges                              badges    @relation(fields: [badge_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_user_badges_granted_byTousers users?    @relation("user_badges_granted_byTousers", fields: [granted_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_user_badges_user_idTousers    users     @relation("user_badges_user_idTousers", fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, badge_id])
+}
+
+model user_notes {
+  owner_id                          String    @db.Uuid
+  target_id                         String    @db.Uuid
+  content                           String
+  updated_at                        DateTime? @default(now()) @db.Timestamptz(6)
+  users_user_notes_owner_idTousers  users     @relation("user_notes_owner_idTousers", fields: [owner_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_user_notes_target_idTousers users     @relation("user_notes_target_idTousers", fields: [target_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([owner_id, target_id])
+}
+
+model user_settings {
+  user_id         String    @id @db.Uuid
+  theme           String?   @default("dark") @db.VarChar(10)
+  locale          String?   @default("tr") @db.VarChar(10)
+  message_display String?   @default("cozy") @db.VarChar(20)
+  show_embeds     Boolean?  @default(true)
+  animate_emoji   Boolean?  @default(true)
+  enable_tts      Boolean?  @default(false)
+  notification    String?   @default("all") @db.VarChar(20)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id                                                            String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                                                       BigInt                   @unique
+  username                                                      String                   @unique @db.VarChar(32)
+  display_name                                                  String?                  @db.VarChar(32)
+  password_hash                                                 String
+  avatar_url                                                    String?
+  banner_url                                                    String?
+  about_me                                                      String?
+  status                                                        String?                  @default("offline") @db.VarChar(20)
+  custom_status                                                 String?
+  global_role                                                   String?                  @default("user") @db.VarChar(20)
+  is_bot                                                        Boolean?                 @default(false)
+  is_banned                                                     Boolean?                 @default(false)
+  ban_reason                                                    String?
+  banned_at                                                     DateTime?                @db.Timestamptz(6)
+  two_factor_secret                                             String?
+  is_two_factor_enabled                                         Boolean?                 @default(false)
+  created_at                                                    DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at                                                    DateTime?                @default(now()) @db.Timestamptz(6)
+  banned_by                                                     String?                  @db.Uuid
+  audit_logs                                                    audit_logs[]
+  auto_mod_logs                                                 auto_mod_logs[]
+  auto_mod_rules                                                auto_mod_rules[]
+  bans_bans_banned_byTousers                                    bans[]                   @relation("bans_banned_byTousers")
+  bans_bans_user_idTousers                                      bans[]                   @relation("bans_user_idTousers")
+  custom_emojis                                                 custom_emojis[]
+  dm_call_participants                                          dm_call_participants[]
+  dm_calls                                                      dm_calls[]
+  dm_channels                                                   dm_channels[]
+  dm_members                                                    dm_members[]
+  event_subscribers                                             event_subscribers[]
+  friendships_friendships_friend_idTousers                      friendships[]            @relation("friendships_friend_idTousers")
+  friendships_friendships_user_idTousers                        friendships[]            @relation("friendships_user_idTousers")
+  guild_folders                                                 guild_folders[]
+  guild_members                                                 guild_members[]
+  guild_positions                                               guild_positions[]
+  guilds                                                        guilds[]
+  invites                                                       invites[]
+  login_history                                                 login_history[]
+  member_roles                                                  member_roles[]
+  messages                                                      messages[]
+  notification_settings                                         notification_settings[]
+  notifications                                                 notifications[]
+  platform_announcements                                        platform_announcements[]
+  platform_audit_logs_platform_audit_logs_executor_idTousers    platform_audit_logs[]    @relation("platform_audit_logs_executor_idTousers")
+  platform_audit_logs_platform_audit_logs_target_user_idTousers platform_audit_logs[]    @relation("platform_audit_logs_target_user_idTousers")
+  reactions                                                     reactions[]
+  read_states                                                   read_states[]
+  refresh_tokens                                                refresh_tokens[]
+  scheduled_events                                              scheduled_events[]
+  thread_members                                                thread_members[]
+  threads                                                       threads[]
+  user_activities                                               user_activities[]
+  user_badges_user_badges_granted_byTousers                     user_badges[]            @relation("user_badges_granted_byTousers")
+  user_badges_user_badges_user_idTousers                        user_badges[]            @relation("user_badges_user_idTousers")
+  user_notes_user_notes_owner_idTousers                         user_notes[]             @relation("user_notes_owner_idTousers")
+  user_notes_user_notes_target_idTousers                        user_notes[]             @relation("user_notes_target_idTousers")
+  user_settings                                                 user_settings?
+  users                                                         users?                   @relation("usersTousers", fields: [banned_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_users                                                   users[]                  @relation("usersTousers")
+  voice_logs                                                    voice_logs[]
+  voice_states                                                  voice_states[]
+  webhooks                                                      webhooks[]
+
+  @@index([global_role], map: "idx_users_global_role")
+  @@index([user_id], map: "idx_users_user_id")
+}
+
+model voice_logs {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String?   @db.Uuid
+  guild_id        String?   @db.Uuid
+  channel_id      String?   @db.Uuid
+  action          String    @db.VarChar(20)
+  connected_at    DateTime? @db.Timestamptz(6)
+  disconnected_at DateTime? @db.Timestamptz(6)
+  duration_sec    Int?
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  channels        channels? @relation(fields: [channel_id], references: [id], onUpdate: NoAction)
+  guilds          guilds?   @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users           users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+}
+
+model voice_states {
+  user_id            String    @db.Uuid
+  guild_id           String    @db.Uuid
+  channel_id         String?   @db.Uuid
+  session_id         String    @db.VarChar(100)
+  is_muted           Boolean?  @default(false)
+  is_deafened        Boolean?  @default(false)
+  is_server_muted    Boolean?  @default(false)
+  is_server_deafened Boolean?  @default(false)
+  is_streaming       Boolean?  @default(false)
+  is_video           Boolean?  @default(false)
+  connected_at       DateTime? @default(now()) @db.Timestamptz(6)
+  channels           channels? @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  guilds             guilds    @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([user_id, guild_id])
+  @@index([channel_id], map: "idx_voice_channel")
+}
+
+model webhooks {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  guild_id   String?   @db.Uuid
+  channel_id String?   @db.Uuid
+  name       String    @db.VarChar(80)
+  avatar_url String?
+  token      String    @unique
+  creator_id String?   @db.Uuid
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  channels   channels? @relation(fields: [channel_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users      users?    @relation(fields: [creator_id], references: [id], onUpdate: NoAction)
+  guilds     guilds?   @relation(fields: [guild_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}

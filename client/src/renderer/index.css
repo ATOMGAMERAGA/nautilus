@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #313338;
+  --bg-secondary: #2b2d31;
+  --bg-tertiary: #1e1f22;
+  --text-primary: #dbdee1;
+  --text-secondary: #949ba4;
+  --accent: #5865f2;
+}
+
+[data-theme='light'] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f2f3f5;
+  --bg-tertiary: #e3e5e8;
+  --text-primary: #060607;
+  --text-secondary: #4e5058;
+  --accent: #5865f2;
+}
+
+[data-theme='contrast'] {
+  --bg-primary: #000000;
+  --bg-secondary: #000000;
+  --bg-tertiary: #000000;
+  --text-primary: #ffffff;
+  --text-secondary: #ffffff;
+  --accent: #ffff00;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'gg sans', 'Noto Sans', sans-serif;
+}
+
+@layer base {
+  .bg-background-primary { background-color: var(--bg-primary); }
+  .bg-background-secondary { background-color: var(--bg-secondary); }
+  .bg-background-tertiary { background-color: var(--bg-tertiary); }
+  .text-header-primary { color: var(--text-primary); }
+  .text-header-secondary { color: var(--text-secondary); }
+  .text-nautilus { color: var(--accent); }
+  .bg-nautilus { background-color: var(--accent); }
+}

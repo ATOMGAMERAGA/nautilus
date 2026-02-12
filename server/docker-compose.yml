@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  nautilus-server:
+    build: .
+    container_name: nautilus-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "10000-10100:10000-10100/udp"   # mediasoup RTP portları
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://nautilus:${DB_PASSWORD}@postgres:5432/nautilus
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN:-https://nautilusserver.atomland.xyz}
+      - UPLOAD_DIR=/app/uploads
+      - MAX_FILE_SIZE=26214400
+      - MEDIASOUP_LISTEN_IP=0.0.0.0
+      - MEDIASOUP_ANNOUNCED_IP=${PUBLIC_IP}
+      - MEDIASOUP_MIN_PORT=10000
+      - MEDIASOUP_MAX_PORT=10100
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nautilus-net
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nautilus-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nautilus
+      POSTGRES_USER: nautilus
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nautilus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nautilus-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: nautilus-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nautilus-net
+
+  # TURN/STUN sunucusu — NAT arkasındaki kullanıcılar için WebRTC bağlantı
+  coturn:
+    image: coturn/coturn:latest
+    container_name: nautilus-turn
+    restart: unless-stopped
+    ports:
+      - "3478:3478"                # STUN/TURN TCP
+      - "3478:3478/udp"           # STUN/TURN UDP
+      - "5349:5349"                # TURNS (TLS)
+      - "49152-49200:49152-49200/udp"  # TURN relay portları
+    environment:
+      - DETECT_EXTERNAL_IP=yes
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    networks:
+      - nautilus-net
+
+  # Monitoring Stack
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: nautilus-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - nautilus-net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: nautilus-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    networks:
+      - nautilus-net
+
+  loki:
+    image: grafana/loki:latest
+    container_name: nautilus-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    networks:
+      - nautilus-net
+
+volumes:
+  pgdata:
+  redisdata:
+  uploads:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  nautilus-net:
+    driver: bridge
