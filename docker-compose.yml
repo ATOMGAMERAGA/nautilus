@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Backend Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: nautilus-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "10000-10100:10000-10100/udp"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://nautilus:${DB_PASSWORD}@postgres:5432/nautilus
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - MEDIASOUP_LISTEN_IP=0.0.0.0
+      - MEDIASOUP_ANNOUNCED_IP=${PUBLIC_IP}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - nautilus-net
+
+  # Frontend Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: nautilus-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - nautilus-net
+
+  # Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: nautilus-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nautilus
+      POSTGRES_USER: nautilus
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nautilus"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nautilus-net
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: nautilus-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nautilus-net
+
+networks:
+  nautilus-net:
+    driver: bridge
+
+volumes:
+  pgdata:
