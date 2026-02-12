@@ -35,8 +35,8 @@ services:
       dockerfile: Dockerfile
     container_name: nautilus-client
     restart: unless-stopped
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - server
     networks:
