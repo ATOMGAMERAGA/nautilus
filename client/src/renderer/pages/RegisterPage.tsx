@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
-import { User, KeyRound, Eye, EyeOff, AlertCircle, Shell, AtSign, AlertTriangle, Check } from 'lucide-react';
+import { User, KeyRound, Eye, EyeOff, AlertCircle, AtSign, AlertTriangle, Check } from 'lucide-react';
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -46,8 +46,11 @@ export function RegisterPage() {
       <div className="relative z-10 w-full max-w-[440px] animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#5865f2] mb-4 animate-pulse-glow shadow-lg shadow-[#5865f2]/20">
-            <Shell size={32} className="text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#5865f2] mb-4 animate-pulse-glow shadow-lg shadow-[#5865f2]/20 overflow-hidden">
+            <img src="/icon.png" alt="Nautilus" className="w-10 h-10 object-contain" onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              e.currentTarget.parentElement!.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M12 2a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7Z"/></svg>';
+            }} />
           </div>
           <h1 className="text-[28px] font-bold text-white tracking-tight">Create an account</h1>
         </div>

@@ -48,10 +48,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await api.post('/auth/login', { username, password });
       await secureStorage.setTokens(res.data.access_token, res.data.refresh_token);
-      set({ user: res.data.user, isAuthenticated: true, isLoading: false });
+      set({ user: res.data.user, isAuthenticated: true });
       if (isNative) initPushNotifications();
     } catch (err: any) {
-      set({ error: getErrorMessage(err, 'Login failed'), isLoading: false });
+      set({ error: getErrorMessage(err, 'Login failed') });
+    } finally {
+      set({ isLoading: false });
     }
   },
 
@@ -60,10 +62,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await api.post('/auth/register', data);
       await secureStorage.setTokens(res.data.access_token, res.data.refresh_token);
-      set({ user: res.data.user, isAuthenticated: true, isLoading: false });
+      set({ user: res.data.user, isAuthenticated: true });
       if (isNative) initPushNotifications();
     } catch (err: any) {
-      set({ error: getErrorMessage(err, 'Registration failed'), isLoading: false });
+      set({ error: getErrorMessage(err, 'Registration failed') });
+    } finally {
+      set({ isLoading: false });
     }
   },
 

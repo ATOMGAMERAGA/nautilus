@@ -121,7 +121,7 @@ export const authController = {
         },
       });
 
-      return {
+      return reply.send({
         user: {
           id: user.id,
           user_id: Number(user.user_id),
@@ -132,7 +132,7 @@ export const authController = {
         },
         access_token: accessToken,
         refresh_token: refreshToken,
-      };
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({ error: (error as any).errors });
