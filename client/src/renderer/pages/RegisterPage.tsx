@@ -35,16 +35,16 @@ export function RegisterPage() {
   const strength = getPasswordStrength(formData.password);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden safe-area-top safe-area-bottom">
-      {/* Animated gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0c0d10] via-[#1a1147] to-[#0c0d10] animate-gradient" />
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 relative overflow-y-auto overflow-x-hidden bg-[#0c0d10]">
+      {/* Animated gradient background - Fixed */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[#0c0d10] via-[#1a1147] to-[#0c0d10] animate-gradient pointer-events-none" />
 
-      {/* Floating orbs - Hidden on very small screens */}
-      <div className="hidden sm:block fixed top-1/3 right-1/4 w-96 h-96 bg-[#5865f2]/10 rounded-full blur-[128px] animate-float" />
-      <div className="hidden sm:block fixed bottom-1/3 left-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-[128px] animate-float" style={{ animationDelay: '1.5s' }} />
+      {/* Floating orbs - Hidden on mobile */}
+      <div className="hidden sm:block fixed top-1/3 right-1/4 w-96 h-96 bg-[#5865f2]/10 rounded-full blur-[128px] animate-float pointer-events-none" />
+      <div className="hidden sm:block fixed bottom-1/3 left-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-[128px] animate-float pointer-events-none" style={{ animationDelay: '1.5s' }} />
 
-      <div className="relative z-10 w-full max-w-[440px] animate-fade-in flex flex-col my-auto">
-        {/* Logo */}
+      <div className="relative z-10 w-full max-w-[440px] animate-fade-in flex flex-col py-8 sm:py-0">
+        {/* Logo Section */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#5865f2] mb-4 animate-pulse-glow shadow-lg shadow-[#5865f2]/20 overflow-hidden">
             <img src="/icon.png" alt="Nautilus" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" onError={(e) => {
@@ -55,8 +55,8 @@ export function RegisterPage() {
           <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight">Create an account</h1>
         </div>
 
-        {/* Card */}
-        <div className="glass-heavy rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 w-full overflow-y-auto max-h-[calc(100vh-120px)] sm:max-h-none custom-scrollbar">
+        {/* Card Section */}
+        <div className="glass-heavy rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 w-full mx-auto border border-white/5">
           {error && (
             <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-5 text-sm animate-fade-in">
               <AlertCircle size={18} className="flex-shrink-0" />
@@ -65,19 +65,19 @@ export function RegisterPage() {
           )}
 
           {/* Warning */}
-          <div className="flex gap-3 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 sm:p-3.5 mb-5 sm:mb-6">
+          <div className="flex gap-3 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3.5 mb-6">
             <AlertTriangle size={20} className="text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-amber-400 font-semibold text-[10px] sm:text-xs uppercase tracking-wide">Never forget your password!</p>
               <p className="text-[#b5bac1] text-[10px] sm:text-xs mt-1 leading-relaxed">
-                Nautilus does not have a password reset system. If you lose your password, your account is gone forever.
+                Nautilus has no password reset. If lost, your account is gone forever.
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+            <div className="space-y-1.5">
+              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
                 Display Name
               </label>
               <div className="relative">
@@ -92,8 +92,8 @@ export function RegisterPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+            <div className="space-y-1.5">
+              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
                 Username
               </label>
               <div className="relative">
@@ -109,8 +109,8 @@ export function RegisterPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+            <div className="space-y-1.5">
+              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
                 Password
               </label>
               <div className="relative">
@@ -132,8 +132,8 @@ export function RegisterPage() {
                 </button>
               </div>
               {formData.password && (
-                <div className="mt-2.5 space-y-1.5 animate-fade-in">
-                  <div className="flex gap-1.5">
+                <div className="mt-2 space-y-1.5 animate-fade-in">
+                  <div className="flex gap-1.5 px-1">
                     {[...Array(4)].map((_, i) => (
                       <div key={i} className="flex-1 h-1 rounded-full bg-[#1e1f22] overflow-hidden">
                         <div
@@ -143,8 +143,8 @@ export function RegisterPage() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-[10px] sm:text-[11px] text-[#6d6f78]">
-                    Password strength: <span className={`font-medium ${strength.score === 100 ? 'text-green-400' : strength.score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{strength.label}</span>
+                  <p className="text-[10px] text-[#6d6f78] ml-1">
+                    Password: <span className={`font-medium ${strength.score === 100 ? 'text-green-400' : strength.score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{strength.label}</span>
                   </p>
                 </div>
               )}
@@ -173,25 +173,28 @@ export function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading || !ack}
-              className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-[15px] py-2.5 sm:py-3 mt-2"
+              className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-[15px] py-3 sm:py-3.5 mt-2 shadow-lg shadow-[#5865f2]/20"
             >
               {isLoading ? (
                 <>
                   <div className="spinner" />
-                  <span>Creating account...</span>
+                  <span>Creating...</span>
                 </>
               ) : (
                 'Continue'
               )}
             </button>
 
-            <p className="text-sm text-[#b5bac1] text-center pt-2">
-              <Link to="/login" className="text-[#5865f2] hover:text-[#7983f5] font-medium transition-colors hover:underline">
+            <div className="text-center pt-2">
+              <Link to="/login" className="text-sm text-[#5865f2] hover:text-[#7983f5] font-medium transition-colors hover:underline">
                 Already have an account?
               </Link>
-            </p>
+            </div>
           </form>
         </div>
+        
+        {/* Footer spacer */}
+        <div className="h-8 sm:hidden" />
       </div>
     </div>
   );

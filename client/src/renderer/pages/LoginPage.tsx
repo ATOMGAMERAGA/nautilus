@@ -15,16 +15,16 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-hidden safe-area-top safe-area-bottom">
-      {/* Animated gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0c0d10] via-[#1a1147] to-[#0c0d10] animate-gradient" />
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 relative overflow-y-auto overflow-x-hidden bg-[#0c0d10]">
+      {/* Animated gradient background - Fixed to stay in background while scrolling */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[#0c0d10] via-[#1a1147] to-[#0c0d10] animate-gradient pointer-events-none" />
 
-      {/* Floating orbs - Hidden on very small screens to improve performance and clarity */}
-      <div className="hidden sm:block fixed top-1/4 left-1/4 w-96 h-96 bg-[#5865f2]/10 rounded-full blur-[128px] animate-float" />
-      <div className="hidden sm:block fixed bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-[128px] animate-float" style={{ animationDelay: '1.5s' }} />
+      {/* Floating orbs - Hidden on mobile for better performance and less clutter */}
+      <div className="hidden sm:block fixed top-1/4 left-1/4 w-96 h-96 bg-[#5865f2]/10 rounded-full blur-[128px] animate-float pointer-events-none" />
+      <div className="hidden sm:block fixed bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-[128px] animate-float pointer-events-none" style={{ animationDelay: '1.5s' }} />
 
-      <div className="relative z-10 w-full max-w-[440px] animate-fade-in flex flex-col">
-        {/* Logo */}
+      <div className="relative z-10 w-full max-w-[440px] animate-fade-in flex flex-col py-8 sm:py-0">
+        {/* Logo Section */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#5865f2] mb-4 animate-pulse-glow shadow-lg shadow-[#5865f2]/20 overflow-hidden">
             <img src="/icon.png" alt="Nautilus" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" onError={(e) => {
@@ -36,8 +36,8 @@ export function LoginPage() {
           <p className="text-[#b5bac1] mt-1 text-sm sm:text-[15px]">We're so excited to see you again!</p>
         </div>
 
-        {/* Card */}
-        <div className="glass-heavy rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 w-full">
+        {/* Card Section */}
+        <div className="glass-heavy rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 w-full mx-auto border border-white/5">
           {error && (
             <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-5 text-sm animate-fade-in">
               <AlertCircle size={18} className="flex-shrink-0" />
@@ -46,15 +46,15 @@ export function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+            <div className="space-y-2">
+              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
                 Username
               </label>
               <div className="relative">
                 <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
                 <input
                   type="text"
-                  className="input-modern pl-11 py-2.5 sm:py-3"
+                  className="input-modern pl-11 py-3 sm:py-3.5"
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => { setUsername(e.target.value); clearError(); }}
@@ -63,15 +63,15 @@ export function LoginPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+            <div className="space-y-2">
+              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
                 Password
               </label>
               <div className="relative">
                 <KeyRound size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="input-modern pl-11 pr-11 py-2.5 sm:py-3"
+                  className="input-modern pl-11 pr-11 py-3 sm:py-3.5"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); clearError(); }}
@@ -85,15 +85,15 @@ export function LoginPage() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-[#6d6f78] mt-2">
-                Password recovery is not available. Don't lose it!
+              <p className="text-[10px] sm:text-[11px] text-[#6d6f78] mt-2 ml-1">
+                Password recovery is not available.
               </p>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-[15px] py-2.5 sm:py-3 mt-2"
+              className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-[15px] py-3 sm:py-3.5 mt-2 shadow-lg shadow-[#5865f2]/20 active:scale-[0.98] transition-transform"
             >
               {isLoading ? (
                 <>
@@ -105,14 +105,19 @@ export function LoginPage() {
               )}
             </button>
 
-            <p className="text-sm text-[#b5bac1] text-center pt-2">
-              Need an account?{' '}
-              <Link to="/register" className="text-[#5865f2] hover:text-[#7983f5] font-medium transition-colors hover:underline">
-                Register
-              </Link>
-            </p>
+            <div className="flex flex-col items-center gap-2 pt-2">
+              <p className="text-sm text-[#b5bac1]">
+                Need an account?{' '}
+                <Link to="/register" className="text-[#5865f2] hover:text-[#7983f5] font-medium transition-colors hover:underline">
+                  Register
+                </Link>
+              </p>
+            </div>
           </form>
         </div>
+        
+        {/* Footer spacer for mobile keyboard / safe area */}
+        <div className="h-8 sm:hidden" />
       </div>
     </div>
   );
