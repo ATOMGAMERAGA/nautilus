@@ -24,6 +24,15 @@ interface AuthState {
   register: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   loadSession: () => Promise<void>;
+  clearError: () => void;
+}
+
+function getErrorMessage(err: any, fallback: string): string {
+  if (err?.response?.data?.error) return err.response.data.error;
+  if (err?.response?.data?.message) return err.response.data.message;
+  if (err?.code === 'ECONNABORTED' || err?.message?.includes('timeout')) return 'Connection timed out. Please try again.';
+  if (err?.code === 'ERR_NETWORK' || !err?.response) return 'Cannot connect to server. Check your connection.';
+  return fallback;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -32,18 +41,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   error: null,
 
+  clearError: () => set({ error: null }),
+
   login: async (username, password) => {
     set({ isLoading: true, error: null });
     try {
       const res = await api.post('/auth/login', { username, password });
       await secureStorage.setTokens(res.data.access_token, res.data.refresh_token);
-      set({ user: res.data.user, isAuthenticated: true });
+      set({ user: res.data.user, isAuthenticated: true, isLoading: false });
       if (isNative) initPushNotifications();
     } catch (err: any) {
-      set({ error: err.response?.data?.error || 'Login failed' });
-      throw err;
-    } finally {
-      set({ isLoading: false });
+      set({ error: getErrorMessage(err, 'Login failed'), isLoading: false });
     }
   },
 
@@ -52,12 +60,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const res = await api.post('/auth/register', data);
       await secureStorage.setTokens(res.data.access_token, res.data.refresh_token);
-      set({ user: res.data.user, isAuthenticated: true });
+      set({ user: res.data.user, isAuthenticated: true, isLoading: false });
+      if (isNative) initPushNotifications();
     } catch (err: any) {
-      set({ error: err.response?.data?.error || 'Registration failed' });
-      throw err;
-    } finally {
-      set({ isLoading: false });
+      set({ error: getErrorMessage(err, 'Registration failed'), isLoading: false });
     }
   },
 
@@ -71,9 +77,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const token = await secureStorage.getAccessToken();
       if (token) {
-        // Ideally fetch @me here
-        // For now we trust the token exists and try to fetch user info if we had an endpoint
-        // set({ isAuthenticated: true });
+        try {
+          const res = await api.get('/users/@me');
+          set({ user: res.data, isAuthenticated: true });
+        } catch {
+          await secureStorage.clearTokens();
+        }
       }
     } finally {
       set({ isLoading: false });

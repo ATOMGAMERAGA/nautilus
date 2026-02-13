@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
+import { User, KeyRound, Eye, EyeOff, AlertCircle, Shell, AtSign, AlertTriangle, Check } from 'lucide-react';
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -8,112 +9,186 @@ export function RegisterPage() {
     password: '',
     display_name: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [ack, setAck] = useState(false);
-  const { register, isLoading, error } = useAuthStore();
+  const { register, isLoading, error, clearError } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ack) return;
-    try {
-      await register(formData);
-    } catch (err) {
-      // Error handled by store
-    }
+    await register(formData);
   };
 
   const getPasswordStrength = (pwd: string) => {
-    if (!pwd) return 0;
-    let strength = 0;
-    if (pwd.length >= 8) strength += 25;
-    if (/[A-Z]/.test(pwd)) strength += 25;
-    if (/[a-z]/.test(pwd)) strength += 25;
-    if (/[0-9]/.test(pwd)) strength += 25;
-    return strength;
+    if (!pwd) return { score: 0, label: '', color: '' };
+    let score = 0;
+    if (pwd.length >= 8) score += 25;
+    if (/[A-Z]/.test(pwd)) score += 25;
+    if (/[a-z]/.test(pwd)) score += 25;
+    if (/[0-9]/.test(pwd)) score += 25;
+    if (score <= 25) return { score, label: 'Weak', color: 'bg-red-500' };
+    if (score <= 50) return { score, label: 'Fair', color: 'bg-orange-500' };
+    if (score <= 75) return { score, label: 'Good', color: 'bg-yellow-500' };
+    return { score, label: 'Strong', color: 'bg-green-500' };
   };
 
   const strength = getPasswordStrength(formData.password);
 
   return (
-    <div className="min-h-screen bg-background-tertiary flex items-center justify-center p-4">
-      <div className="bg-background-primary p-8 rounded-lg shadow-2xl w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-header-primary">Create an account</h1>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[#0c0d10] via-[#1a1147] to-[#0c0d10] animate-gradient" />
+
+      {/* Floating orbs */}
+      <div className="fixed top-1/3 right-1/4 w-96 h-96 bg-[#5865f2]/10 rounded-full blur-[128px] animate-float" />
+      <div className="fixed bottom-1/3 left-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-[128px] animate-float" style={{ animationDelay: '1.5s' }} />
+
+      <div className="relative z-10 w-full max-w-[440px] animate-fade-in">
+        {/* Logo */}
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#5865f2] mb-4 animate-pulse-glow shadow-lg shadow-[#5865f2]/20">
+            <Shell size={32} className="text-white" />
+          </div>
+          <h1 className="text-[28px] font-bold text-white tracking-tight">Create an account</h1>
         </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded mb-4 text-sm">
-            {error}
-          </div>
-        )}
+        {/* Card */}
+        <div className="glass-heavy rounded-2xl p-8 shadow-2xl shadow-black/40">
+          {error && (
+            <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-5 text-sm animate-fade-in">
+              <AlertCircle size={18} className="flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
-        <div className="bg-red-500/20 border-l-4 border-red-500 p-4 mb-6">
-          <h3 className="text-red-500 font-bold text-sm uppercase flex items-center">
-            ⚠️ NEVER FORGET YOUR PASSWORD!
-          </h3>
-          <p className="text-header-primary text-xs mt-1">
-            Nautilus does not have a password reset system. If you lose your password, you will lose access to your account forever.
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-header-secondary uppercase mb-2">
-              Username
-            </label>
-            <input
-              type="text"
-              className="w-full bg-background-tertiary border-none rounded p-3 text-header-primary focus:ring-2 focus:ring-nautilus outline-none"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-header-secondary uppercase mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              className="w-full bg-background-tertiary border-none rounded p-3 text-header-primary focus:ring-2 focus:ring-nautilus outline-none"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-            />
-            <div className="mt-2 h-1 w-full bg-background-tertiary rounded overflow-hidden">
-              <div 
-                className={`h-full transition-all duration-300 ${strength < 50 ? 'bg-red-500' : strength < 100 ? 'bg-yellow-500' : 'bg-green-500'}`}
-                style={{ width: `${strength}%` }}
-              ></div>
+          {/* Warning */}
+          <div className="flex gap-3 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3.5 mb-6">
+            <AlertTriangle size={20} className="text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-400 font-semibold text-xs uppercase tracking-wide">Never forget your password!</p>
+              <p className="text-[#b5bac1] text-xs mt-1 leading-relaxed">
+                Nautilus does not have a password reset system. If you lose your password, your account is gone forever.
+              </p>
             </div>
           </div>
 
-          <div className="flex items-start space-x-2 py-2">
-            <input
-              type="checkbox"
-              id="ack"
-              className="mt-1"
-              checked={ack}
-              onChange={(e) => setAck(e.target.checked)}
-              required
-            />
-            <label htmlFor="ack" className="text-xs text-header-secondary leading-tight">
-              I understand that if I lose my password, I will not be able to recover my account.
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+                Display Name
+              </label>
+              <div className="relative">
+                <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
+                <input
+                  type="text"
+                  className="input-modern pl-11"
+                  placeholder="How others will see you"
+                  value={formData.display_name}
+                  onChange={(e) => { setFormData({ ...formData, display_name: e.target.value }); clearError(); }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <AtSign size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
+                <input
+                  type="text"
+                  className="input-modern pl-11"
+                  placeholder="Choose a unique username"
+                  value={formData.username}
+                  onChange={(e) => { setFormData({ ...formData, username: e.target.value }); clearError(); }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#b5bac1] uppercase tracking-wider mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <KeyRound size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="input-modern pl-11 pr-11"
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={(e) => { setFormData({ ...formData, password: e.target.value }); clearError(); }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] hover:text-[#b5bac1] transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {formData.password && (
+                <div className="mt-2.5 space-y-1.5 animate-fade-in">
+                  <div className="flex gap-1.5">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex-1 h-1 rounded-full bg-[#1e1f22] overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${i < strength.score / 25 ? strength.color : ''}`}
+                          style={{ width: i < strength.score / 25 ? '100%' : '0%' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-[#6d6f78]">
+                    Password strength: <span className={`font-medium ${strength.score === 100 ? 'text-green-400' : strength.score >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>{strength.label}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <label
+              htmlFor="ack"
+              className="flex items-start gap-3 py-2 cursor-pointer group"
+            >
+              <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 border-2 flex items-center justify-center transition-all duration-200 ${ack ? 'bg-[#5865f2] border-[#5865f2]' : 'border-[#4e5058] group-hover:border-[#b5bac1]'}`}>
+                {ack && <Check size={12} className="text-white" />}
+              </div>
+              <input
+                type="checkbox"
+                id="ack"
+                className="sr-only"
+                checked={ack}
+                onChange={(e) => setAck(e.target.checked)}
+                required
+              />
+              <span className="text-xs text-[#b5bac1] leading-relaxed">
+                I understand that if I lose my password, I will not be able to recover my account.
+              </span>
             </label>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isLoading || !ack}
-            className="w-full bg-nautilus hover:bg-nautilus/80 text-white font-bold py-3 rounded transition duration-200 disabled:opacity-50"
-          >
-            {isLoading ? 'Creating account...' : 'Continue'}
-          </button>
+            <button
+              type="submit"
+              disabled={isLoading || !ack}
+              className="btn-primary w-full flex items-center justify-center gap-2 text-[15px] py-3"
+            >
+              {isLoading ? (
+                <>
+                  <div className="spinner" />
+                  <span>Creating account...</span>
+                </>
+              ) : (
+                'Continue'
+              )}
+            </button>
 
-          <p className="text-sm text-header-secondary">
-            <Link to="/login" className="text-nautilus hover:underline">Already have an account?</Link>
-          </p>
-        </form>
+            <p className="text-sm text-[#b5bac1] text-center pt-1">
+              <Link to="/login" className="text-[#5865f2] hover:text-[#7983f5] font-medium transition-colors hover:underline">
+                Already have an account?
+              </Link>
+            </p>
+          </form>
+        </div>
       </div>
     </div>
   );
