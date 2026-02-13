@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { Link } from 'react-router-dom';
-import { User, KeyRound, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export function LoginPage() {
   const [username, setUsername] = useState('');
@@ -15,108 +15,91 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 relative overflow-y-auto overflow-x-hidden bg-[#0c0d10]">
-      {/* Animated gradient background - Fixed to stay in background while scrolling */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0c0d10] via-[#1a1147] to-[#0c0d10] animate-gradient pointer-events-none" />
-
-      {/* Floating orbs - Hidden on mobile for better performance and less clutter */}
-      <div className="hidden sm:block fixed top-1/4 left-1/4 w-96 h-96 bg-[#5865f2]/10 rounded-full blur-[128px] animate-float pointer-events-none" />
-      <div className="hidden sm:block fixed bottom-1/4 right-1/4 w-80 h-80 bg-purple-600/10 rounded-full blur-[128px] animate-float pointer-events-none" style={{ animationDelay: '1.5s' }} />
-
-      <div className="relative z-10 w-full max-w-[440px] animate-fade-in flex flex-col py-8 sm:py-0">
+    <div className="min-h-[100dvh] w-full flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 relative overflow-y-auto overflow-x-hidden bg-background">
+      <div className="relative z-10 w-full max-w-[400px] animate-fade-in flex flex-col py-8 sm:py-0">
         {/* Logo Section */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#5865f2] mb-4 animate-pulse-glow shadow-lg shadow-[#5865f2]/20 overflow-hidden">
-            <img src="/icon.png" alt="Nautilus" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" onError={(e) => {
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-[24px] bg-primary-container mb-6 shadow-elevation-1 overflow-hidden">
+            <img src="/icon.png" alt="Nautilus" className="w-10 h-10 object-contain" onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M12 2a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7Z"/></svg>';
+              e.currentTarget.parentElement!.innerHTML = '<span class="material-symbols-outlined text-primary text-[32px]">anchor</span>';
             }} />
           </div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight">Welcome back!</h1>
-          <p className="text-[#b5bac1] mt-1 text-sm sm:text-[15px]">We're so excited to see you again!</p>
+          <h1 className="text-headline-medium font-bold text-on-background tracking-tight">Sign in</h1>
+          <p className="text-body-medium text-on-surface-variant mt-2">to continue to Nautilus</p>
         </div>
 
-        {/* Card Section */}
-        <div className="glass-heavy rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/40 w-full mx-auto border border-white/5">
+        {/* M3 Card */}
+        <div className="m3-card w-full">
           {error && (
-            <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-5 text-sm animate-fade-in">
+            <div className="flex items-center gap-3 bg-error-container text-on-error-container p-4 rounded-[12px] mb-6 text-body-small animate-fade-in">
               <AlertCircle size={18} className="flex-shrink-0" />
               <span className="flex-1 leading-tight">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            <div className="space-y-2">
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
-                Username
-              </label>
-              <div className="relative">
-                <User size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
-                <input
-                  type="text"
-                  className="input-modern pl-11 py-3 sm:py-3.5"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => { setUsername(e.target.value); clearError(); }}
-                  required
-                />
-              </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="m3-text-field">
+              <input
+                type="text"
+                className="m3-input"
+                placeholder=" "
+                value={username}
+                onChange={(e) => { setUsername(e.target.value); clearError(); }}
+                required
+                id="username"
+              />
+              <label htmlFor="username" className="m3-input-label">Username</label>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-[10px] sm:text-xs font-semibold text-[#b5bac1] uppercase tracking-wider ml-1">
-                Password
-              </label>
-              <div className="relative">
-                <KeyRound size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] pointer-events-none" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="input-modern pl-11 pr-11 py-3 sm:py-3.5"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); clearError(); }}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6d6f78] hover:text-[#b5bac1] transition-colors p-1"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              <p className="text-[10px] sm:text-[11px] text-[#6d6f78] mt-2 ml-1">
-                Password recovery is not available.
-              </p>
+            <div className="m3-text-field">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                className="m3-input pr-12"
+                placeholder=" "
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); clearError(); }}
+                required
+                id="password"
+              />
+              <label htmlFor="password" className="m3-input-label">Password</label>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-4 text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-on-surface/[0.08]"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full flex items-center justify-center gap-2 text-sm sm:text-[15px] py-3 sm:py-3.5 mt-2 shadow-lg shadow-[#5865f2]/20 active:scale-[0.98] transition-transform"
-            >
-              {isLoading ? (
-                <>
-                  <div className="spinner" />
-                  <span>Logging in...</span>
-                </>
-              ) : (
-                'Log In'
-              )}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="m3-button-filled w-full !h-12"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="spinner" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </div>
 
-            <div className="flex flex-col items-center gap-2 pt-2">
-              <p className="text-sm text-[#b5bac1]">
-                Need an account?{' '}
-                <Link to="/register" className="text-[#5865f2] hover:text-[#7983f5] font-medium transition-colors hover:underline">
-                  Register
-                </Link>
-              </p>
+            <div className="text-center pt-2">
+              <Link to="/register" className="m3-button-text w-full">
+                Create account
+              </Link>
             </div>
           </form>
         </div>
         
-        {/* Footer spacer for mobile keyboard / safe area */}
+        {/* Footer spacer */}
         <div className="h-8 sm:hidden" />
       </div>
     </div>

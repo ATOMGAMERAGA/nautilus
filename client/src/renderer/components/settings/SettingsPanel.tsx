@@ -768,7 +768,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
       />
       <div>
         <h2 className="text-headline-medium font-bold text-on-surface">Nautilus</h2>
-        <p className="text-body-large text-on-surface-variant mt-1">Version 1.2.1</p>
+        <p className="text-body-large text-on-surface-variant mt-1">Version 1.2.5</p>
       </div>
 
       <div className="w-full pt-4 border-t border-outline-variant/20 text-left space-y-4">
@@ -877,8 +877,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose })
           </div>
 
           {/* Desktop version label */}
-          <div className="hidden md:block mt-4 pt-4 border-t border-outline-variant/20 text-xs text-on-surface-variant opacity-60">
-            Nautilus v1.2.1
+          <div className="hidden md:block mt-4 pt-4 border-t border-outline-variant/20 text-xs text-on-surface-variant opacity-60 text-center">
+            Nautilus v1.2.5
           </div>
         </div>
 

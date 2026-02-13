@@ -16,28 +16,28 @@ const ProfilePopout: React.FC<ProfilePopoutProps> = ({ user, onClose }) => {
   const [note, setNote] = useState('');
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center md:absolute md:inset-auto md:right-full md:top-0 md:mr-2" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/30 md:hidden" />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center md:absolute md:inset-auto md:right-full md:top-0 md:mr-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/40 md:hidden backdrop-blur-sm" />
       <div
-        className="relative w-[340px] max-w-[90vw] bg-surface-container-high rounded-[16px] shadow-elevation-4 overflow-hidden animate-scale-in"
+        className="relative w-[320px] max-w-[90vw] bg-surface-container rounded-[28px] shadow-elevation-3 overflow-hidden animate-scale-in border border-outline-variant/10"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Banner */}
-        <div className="h-16 bg-gradient-to-r from-primary-container to-tertiary-container relative">
+        <div className="h-24 bg-primary-container relative">
           {user.banner && (
-            <img src={user.banner} alt="" className="w-full h-full object-cover absolute inset-0" />
+            <img src={user.banner} alt="" className="w-full h-full object-cover" />
           )}
         </div>
 
         {/* Avatar */}
-        <div className="px-4 -mt-8 relative z-10">
+        <div className="px-4 -mt-10 relative z-10">
           <div className="relative inline-block">
             <img
               src={user.avatar}
               alt={user.username}
-              className="w-16 h-16 rounded-full border-4 border-surface-container-high"
+              className="w-20 h-20 rounded-full border-4 border-surface-container shadow-elevation-1"
             />
-            <div className={`absolute bottom-1 right-1 w-4 h-4 rounded-full border-[3px] border-surface-container-high ${
+            <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-[3px] border-surface-container ${
               user.status === 'online' ? 'bg-green-500' :
               user.status === 'idle' ? 'bg-yellow-500' :
               user.status === 'dnd' ? 'bg-red-500' :
@@ -47,73 +47,69 @@ const ProfilePopout: React.FC<ProfilePopoutProps> = ({ user, onClose }) => {
         </div>
 
         {/* Info */}
-        <div className="px-4 pt-2 pb-3">
-          <div className="flex items-center gap-1.5">
-            <h3 className="text-title-medium font-bold" style={{ color: user.roleColor }}>
+        <div className="px-5 pt-3 pb-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-headline-small font-bold" style={{ color: user.roleColor }}>
               {user.username}
             </h3>
-            {user.statusEmoji && <span className="text-sm">{user.statusEmoji}</span>}
+            {user.statusEmoji && <span className="text-xl">{user.statusEmoji}</span>}
           </div>
-          <div className="text-body-small text-on-surface-variant">
+          <div className="text-body-medium text-on-surface-variant">
             {user.username}#{user.discriminator}
           </div>
         </div>
 
-        <div className="mx-4 h-px bg-outline-variant/20" />
+        <div className="m3-divider" />
 
-        {/* About Me */}
-        {user.aboutMe && (
-          <div className="px-4 py-3">
-            <h4 className="text-label-large font-bold text-on-surface mb-1">ABOUT ME</h4>
-            <p className="text-body-small text-on-surface-variant">{user.aboutMe}</p>
-          </div>
-        )}
+        <div className="px-5 py-4 space-y-4 max-h-[300px] overflow-y-auto thin-scrollbar">
+          {/* About Me */}
+          {user.aboutMe && (
+            <div>
+              <h4 className="text-label-small font-bold text-primary uppercase tracking-widest mb-1.5">About Me</h4>
+              <p className="text-body-medium text-on-surface">{user.aboutMe}</p>
+            </div>
+          )}
 
-        {/* Roles */}
-        {user.roles && user.roles.length > 0 && (
-          <div className="px-4 py-2">
-            <h4 className="text-label-large font-bold text-on-surface mb-1.5">ROLES</h4>
-            <div className="flex flex-wrap gap-1">
-              {user.roles.map(role => (
-                <span
-                  key={role}
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-label-small bg-surface-container-highest text-on-surface border border-outline-variant/30"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full mr-1.5" style={{ background: user.roleColor || '#8E9099' }} />
-                  {role}
-                </span>
-              ))}
+          {/* Roles */}
+          {user.roles && user.roles.length > 0 && (
+            <div>
+              <h4 className="text-label-small font-bold text-primary uppercase tracking-widest mb-2">Roles</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {user.roles.map(role => (
+                  <span
+                    key={role}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-label-medium bg-secondary-container text-on-secondary-container border border-outline-variant/20"
+                  >
+                    <span className="w-2 h-2 rounded-full mr-2" style={{ background: user.roleColor || '#8E9099' }} />
+                    {role}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Note */}
+          <div>
+            <h4 className="text-label-small font-bold text-primary uppercase tracking-widest mb-2">Note</h4>
+            <div className="m3-text-field">
+              <input
+                type="text"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Click to add a note"
+                className="w-full bg-surface-container-highest rounded-[12px] px-3 py-2 text-body-small text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
             </div>
           </div>
-        )}
-
-        {/* Activity */}
-        {user.activity && (
-          <div className="px-4 py-2">
-            <h4 className="text-label-large font-bold text-on-surface mb-1">ACTIVITY</h4>
-            <p className="text-body-small text-on-surface-variant">{user.activity}</p>
-          </div>
-        )}
-
-        {/* Note */}
-        <div className="px-4 py-2">
-          <h4 className="text-label-large font-bold text-on-surface mb-1">NOTE</h4>
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Click to add a note"
-            className="w-full bg-surface-container rounded-lg px-2.5 py-1.5 text-body-small text-on-surface placeholder:text-on-surface-variant/50 border-none focus:outline-none focus:ring-1 focus:ring-primary"
-          />
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 py-3 flex gap-2">
-          <button className="flex-1 bg-primary text-on-primary px-4 py-2 rounded-full text-label-large font-medium hover:bg-primary/90 transition-colors">
+        <div className="px-5 py-4 bg-surface-container-low flex gap-2">
+          <button className="flex-1 m3-button-filled !h-11">
             Message
           </button>
-          <button className="px-4 py-2 rounded-full text-label-large font-medium border border-outline-variant text-on-surface hover:bg-surface-container-highest transition-colors">
-            Add Friend
+          <button className="m3-button-tonal !h-11 !px-4">
+            <span className="material-symbols-outlined">person_add</span>
           </button>
         </div>
       </div>
@@ -143,45 +139,45 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
   };
 
   const renderUser = (user: User) => (
-    <div
-      key={user.id}
-      className={`flex items-center p-2 rounded-lg cursor-pointer group transition-colors duration-200 state-layer relative
-        ${user.status === 'offline' ? 'opacity-50 hover:opacity-100' : ''}
-        hover:bg-surface-container-high
-      `}
-      onClick={() => setSelectedUser(user)}
-      role="button"
-      aria-label={`${user.username} - ${user.status}${user.activity ? ` - ${user.activity}` : ''}`}
-    >
-      <div className="relative flex-shrink-0">
-        <img
-          src={user.avatar}
-          alt={user.username}
-          className={`w-8 h-8 rounded-full ${user.status === 'offline' ? 'grayscale' : ''}`}
-        />
-        <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-surface-container-low ${getStatusColor(user.status)}`} />
-      </div>
-      <div className="ml-3 overflow-hidden flex-1 min-w-0">
-        <div className="flex items-center gap-1">
-          <span
-            className="text-body-medium font-medium truncate"
-            style={{ color: user.status !== 'offline' ? (user.roleColor || 'inherit') : undefined }}
-          >
-            {user.username}
-          </span>
-          {user.statusEmoji && <span className="text-xs flex-shrink-0">{user.statusEmoji}</span>}
+    <div key={user.id} className="px-2 mb-1">
+      <div
+        className={`flex items-center h-14 px-3 rounded-full cursor-pointer group transition-all duration-200 state-layer relative
+          ${user.status === 'offline' ? 'opacity-60' : ''}
+          hover:bg-on-surface/[0.08]
+        `}
+        onClick={() => setSelectedUser(user)}
+        role="button"
+      >
+        <div className="relative flex-shrink-0">
+          <img
+            src={user.avatar}
+            alt={user.username}
+            className={`w-10 h-10 rounded-full ${user.status === 'offline' ? 'grayscale' : ''} border border-outline-variant/10`}
+          />
+          <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-surface-container-low ${getStatusColor(user.status)}`} />
         </div>
-        {user.activity && user.status !== 'offline' && (
-          <div className="text-label-small text-on-surface-variant truncate">
-            {user.activity}
+        <div className="ml-3 overflow-hidden flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="text-label-large font-bold truncate"
+              style={{ color: user.status !== 'offline' ? (user.roleColor || 'inherit') : undefined }}
+            >
+              {user.username}
+            </span>
+            {user.statusEmoji && <span className="text-sm flex-shrink-0">{user.statusEmoji}</span>}
           </div>
+          {user.activity && user.status !== 'offline' && (
+            <div className="text-body-small text-on-surface-variant truncate">
+              {user.activity}
+            </div>
+          )}
+        </div>
+
+        {/* Profile popout */}
+        {selectedUser?.id === user.id && (
+          <ProfilePopout user={user} onClose={() => setSelectedUser(null)} />
         )}
       </div>
-
-      {/* Profile popout */}
-      {selectedUser?.id === user.id && (
-        <ProfilePopout user={user} onClose={() => setSelectedUser(null)} />
-      )}
     </div>
   );
 
@@ -190,38 +186,38 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
       {/* Mobile Overlay */}
       {isOpen && onCloseMobile && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/40 z-30 md:hidden animate-fade-in backdrop-blur-sm"
           onClick={onCloseMobile}
         />
       )}
 
       <aside className={`
-        fixed inset-y-0 right-0 w-[260px] bg-surface-container-low flex flex-col
+        fixed inset-y-0 right-0 w-[280px] bg-surface-container-low flex flex-col border-l border-outline-variant/10
         transform transition-transform duration-300 ease-emphasized z-40
-        md:relative md:w-60 md:translate-x-0 md:flex-shrink-0
+        md:relative md:w-64 md:translate-x-0 md:flex-shrink-0
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         ${!isOpen ? 'hidden md:flex' : 'flex'}
       `}>
         {/* Header */}
-        <div className="h-12 px-4 flex items-center border-b border-outline-variant/10 flex-shrink-0">
-          <span className="text-label-large font-bold text-on-surface-variant uppercase tracking-wider">
+        <div className="h-16 px-6 flex items-center justify-between flex-shrink-0">
+          <span className="text-label-large font-bold text-on-surface-variant uppercase tracking-widest">
             Members — {users.length}
           </span>
           {onCloseMobile && (
             <button
               onClick={onCloseMobile}
-              className="ml-auto p-1 rounded-full hover:bg-surface-container-high md:hidden"
+              className="p-2 rounded-full hover:bg-on-surface/[0.08] md:hidden transition-colors"
             >
-              <span className="material-symbols-outlined text-[20px]">close</span>
+              <span className="material-symbols-outlined text-[24px]">close</span>
             </button>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-2 space-y-4 thin-scrollbar">
+        <div className="flex-1 overflow-y-auto py-2 space-y-6 thin-scrollbar">
           {/* Online Group */}
           {onlineUsers.length > 0 && (
             <div>
-              <div className="px-2 mb-1.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+              <div className="px-6 mb-2 text-label-small font-bold text-primary uppercase tracking-widest">
                 Online — {onlineUsers.length}
               </div>
               {onlineUsers.map(renderUser)}
@@ -231,7 +227,7 @@ export const MemberSidebar: React.FC<MemberSidebarProps> = ({
           {/* Offline Group */}
           {offlineUsers.length > 0 && (
             <div>
-              <div className="px-2 mb-1.5 text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">
+              <div className="px-6 mb-2 text-label-small font-bold text-on-surface-variant uppercase tracking-widest">
                 Offline — {offlineUsers.length}
               </div>
               {offlineUsers.map(renderUser)}

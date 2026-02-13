@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { api } from '../services/api';
-import { Lock, ShieldCheck, X } from 'lucide-react';
 
 export function TwoFactorSetup({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<'generate' | 'verify' | 'success'>('generate');
@@ -29,27 +28,29 @@ export function TwoFactorSetup({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[200] flex items-center justify-center p-4">
-      <div className="bg-background-primary w-full max-w-md rounded-lg shadow-2xl p-6 border border-background-tertiary relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-header-secondary hover:text-white">
-          <X size={20} />
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-surface w-full max-w-md rounded-[28px] shadow-elevation-5 p-8 border border-outline-variant/10 animate-scale-in">
+        <button onClick={onClose} className="m3-icon-button absolute top-4 right-4">
+          <span className="material-symbols-outlined">close</span>
         </button>
 
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center">
-          <ShieldCheck className="mr-2 text-nautilus" /> Two-Factor Authentication
+        <h2 className="text-headline-small font-bold text-on-surface mb-6 flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-[28px]">shield_lock</span>
+          2FA Setup
         </h2>
 
         {step === 'generate' && (
-          <div className="text-center space-y-6">
-            <div className="bg-background-secondary p-4 rounded-lg flex flex-col items-center">
-              <Lock size={48} className="text-nautilus mb-2" />
-              <p className="text-header-secondary text-sm">
-                Protect your account with an extra layer of security. Once enabled, you'll need to enter a code from your authenticator app to log in.
+          <div className="text-center space-y-8 animate-fade-in">
+            <div className="bg-surface-container-highest/50 p-6 rounded-[24px] flex flex-col items-center border border-outline-variant/5">
+              <span className="material-symbols-outlined text-[64px] text-primary mb-4">lock_reset</span>
+              <p className="text-body-medium text-on-surface-variant leading-relaxed">
+                Add an extra layer of security. You'll need a code from your authenticator app to sign in.
               </p>
             </div>
             <button 
               onClick={handleGenerate}
-              className="w-full bg-nautilus text-white py-2 rounded font-bold hover:bg-nautilus/80 transition-colors"
+              className="m3-button-filled w-full !h-12 shadow-lg shadow-primary/20"
             >
               Get Started
             </button>
@@ -57,53 +58,66 @@ export function TwoFactorSetup({ onClose }: { onClose: () => void }) {
         )}
 
         {step === 'verify' && secretData && (
-          <div className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-              <p className="text-header-secondary text-sm text-center">
-                Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.).
+          <div className="space-y-8 animate-fade-in">
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-body-small text-on-surface-variant text-center px-4">
+                Scan this QR code with your authenticator app.
               </p>
-              <img src={secretData.qrImageUrl} alt="2FA QR Code" className="w-48 h-48 rounded bg-white p-2" />
-              <div className="text-xs text-header-secondary font-mono bg-background-tertiary px-2 py-1 rounded">
-                Secret: {secretData.secret}
+              <div className="p-4 bg-white rounded-[24px] shadow-elevation-1">
+                <img src={secretData.qrImageUrl} alt="2FA QR Code" className="w-44 h-44" />
+              </div>
+              <div className="text-[10px] font-mono font-bold text-primary bg-primary-container/30 px-3 py-1.5 rounded-full border border-primary/10">
+                CODE: {secretData.secret}
               </div>
             </div>
 
-            <form onSubmit={handleEnable} className="space-y-2">
-              <label className="text-xs font-bold text-header-secondary uppercase">Enter Code</label>
-              <input 
-                type="text" 
-                maxLength={6}
-                placeholder="000000"
-                className="w-full bg-background-tertiary rounded p-3 text-center text-white text-xl tracking-widest outline-none focus:ring-2 focus:ring-nautilus"
-                value={token}
-                onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))}
-              />
-              {error && <div className="text-red-500 text-xs text-center">{error}</div>}
+            <form onSubmit={handleEnable} className="space-y-4">
+              <div className="m3-text-field">
+                <input 
+                  type="text" 
+                  maxLength={6}
+                  placeholder=" "
+                  className="m3-input !text-center !text-2xl !tracking-[0.5em] !font-bold"
+                  value={token}
+                  onChange={(e) => {
+                    setToken(e.target.value.replace(/\D/g, ''));
+                    setError(null);
+                  }}
+                  id="token"
+                  autoFocus
+                />
+                <label htmlFor="token" className="m3-input-label !left-0 !right-0 !text-center">Verification Code</label>
+              </div>
+              
+              {error && (
+                <p className="text-error text-[11px] font-bold text-center animate-shake">{error}</p>
+              )}
+              
               <button 
                 type="submit"
                 disabled={token.length !== 6}
-                className="w-full bg-nautilus text-white py-2 rounded font-bold hover:bg-nautilus/80 transition-colors disabled:opacity-50 mt-2"
+                className="m3-button-filled w-full !h-12 mt-2"
               >
-                Enable 2FA
+                Verify & Enable
               </button>
             </form>
           </div>
         )}
 
         {step === 'success' && (
-          <div className="text-center space-y-6 py-8">
-            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto text-green-500">
-              <Check size={32} />
+          <div className="text-center space-y-8 py-4 animate-fade-in">
+            <div className="w-20 h-20 bg-primary-container rounded-[24px] flex items-center justify-center mx-auto text-primary shadow-elevation-1">
+              <span className="material-symbols-outlined text-[48px]">verified_user</span>
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">2FA Enabled!</h3>
-              <p className="text-header-secondary text-sm mt-2">
-                Your account is now more secure. Next time you log in, you'll be asked for a verification code.
+              <h3 className="text-title-large font-bold text-on-surface">Successfully Enabled!</h3>
+              <p className="text-body-medium text-on-surface-variant mt-3 leading-relaxed">
+                Your account is now protected. We'll ask for a code on your next login.
               </p>
             </div>
             <button 
               onClick={onClose}
-              className="w-full bg-background-tertiary text-white py-2 rounded font-bold hover:bg-background-secondary transition-colors"
+              className="m3-button-tonal w-full !h-12"
             >
               Done
             </button>
@@ -113,5 +127,3 @@ export function TwoFactorSetup({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-
-import { Check } from 'lucide-react';

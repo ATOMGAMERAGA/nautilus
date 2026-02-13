@@ -20,8 +20,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   onOpenSettings
 }) => {
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
-  const [isMuted, setIsMuted] = useState(false);
-  const [isDeafened, setIsDeafened] = useState(false);
   const [showServerMenu, setShowServerMenu] = useState(false);
 
   const toggleCategory = (catId: string) => {
@@ -32,16 +30,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   };
 
   const isCollapsed = (catId: string) => collapsedCategories.has(catId);
-
-  const toggleMute = () => {
-    if (isDeafened) { setIsDeafened(false); setIsMuted(false); }
-    else setIsMuted(!isMuted);
-  };
-
-  const toggleDeafen = () => {
-    if (!isDeafened) { setIsDeafened(true); setIsMuted(true); }
-    else { setIsDeafened(false); setIsMuted(false); }
-  };
 
   const getChannelIcon = (channel: Channel) => {
     if (channel.type === 'voice') return 'volume_up';
@@ -54,59 +42,48 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     const isVoice = channel.type === 'voice';
 
     return (
-      <div key={channel.id} className="mb-0.5">
+      <div key={channel.id} className="px-3 mb-1">
         <button
           onClick={() => {
             onChannelSelect(channel.id);
             if (window.innerWidth < 768) onCloseMobile?.();
           }}
-          className={`w-[calc(100%-16px)] flex items-center px-2 py-1.5 mx-2 rounded-lg transition-all duration-200 group state-layer min-h-[34px]
+          className={`w-full flex items-center h-14 px-4 rounded-full transition-all duration-200 group state-layer
             ${isSelected
               ? 'bg-secondary-container text-on-secondary-container'
-              : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
+              : 'text-on-surface-variant hover:bg-on-surface/[0.08] hover:text-on-surface'
             }
           `}
           aria-label={`${channel.type} channel ${channel.name}${channel.unread ? ' - unread' : ''}`}
           aria-current={isSelected ? 'true' : undefined}
         >
-          <span className="material-symbols-outlined text-[20px] mr-1.5 opacity-60 flex-shrink-0">
+          <span className={`material-symbols-outlined text-[24px] mr-3 flex-shrink-0 ${isSelected ? 'filled' : 'opacity-70'}`}>
             {getChannelIcon(channel)}
           </span>
-          <span className={`text-body-medium truncate flex-1 text-left ${channel.unread && !isSelected ? 'font-bold text-on-surface' : ''}`}>
+          <span className={`text-label-large truncate flex-1 text-left ${channel.unread && !isSelected ? 'font-bold text-on-surface' : ''}`}>
             {channel.name}
           </span>
           {/* Mention badge */}
           {channel.mentionCount && channel.mentionCount > 0 && (
-            <span className="ml-auto min-w-[18px] h-[18px] bg-error text-on-error text-[11px] font-bold rounded-full flex items-center justify-center px-1 flex-shrink-0">
+            <span className="ml-2 min-w-[20px] h-5 bg-error text-on-error text-label-small font-bold rounded-full flex items-center justify-center px-1.5 flex-shrink-0">
               {channel.mentionCount}
             </span>
           )}
           {/* Unread dot (no mentions) */}
           {channel.unread && !channel.mentionCount && !isSelected && (
-            <div className="ml-auto w-2 h-2 rounded-full bg-on-surface flex-shrink-0" />
-          )}
-          {/* Action buttons on hover */}
-          {!isVoice && (
-            <div className="ml-1 flex items-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px] p-0.5 hover:text-primary cursor-pointer">person_add</span>
-              <span className="material-symbols-outlined text-[16px] p-0.5 hover:text-primary cursor-pointer">settings</span>
-            </div>
+            <div className="ml-2 w-2 h-2 rounded-full bg-primary flex-shrink-0" />
           )}
         </button>
 
         {/* Connected Users for Voice Channels */}
         {isVoice && channel.connectedUsers && channel.connectedUsers.length > 0 && (
-          <div className="ml-9 mt-0.5 space-y-0.5 animate-fade-in">
+          <div className="ml-12 mt-1 space-y-1 animate-fade-in pb-2">
             {channel.connectedUsers.map(user => (
-              <div key={user.id} className="flex items-center group/user cursor-pointer p-1 rounded-md hover:bg-surface-container-highest w-fit pr-2 max-w-[200px]">
-                <div className="relative flex-shrink-0">
-                  <img src={user.avatar} alt={user.username} className="w-5 h-5 rounded-full" />
-                  {/* Speaking indicator would go here */}
-                </div>
-                <span className="text-label-small text-on-surface-variant group-hover/user:text-on-surface truncate ml-1.5">
+              <div key={user.id} className="flex items-center group/user cursor-pointer p-1.5 rounded-full hover:bg-on-surface/[0.08] w-fit pr-4">
+                <img src={user.avatar} alt={user.username} className="w-6 h-6 rounded-full flex-shrink-0" />
+                <span className="text-label-medium text-on-surface-variant group-hover/user:text-on-surface truncate ml-2">
                   {user.username}
                 </span>
-                {/* Mute/deafen icons for user */}
               </div>
             ))}
           </div>
@@ -120,28 +97,27 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
       {/* Mobile Backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/40 z-30 md:hidden animate-fade-in backdrop-blur-sm"
           onClick={onCloseMobile}
         />
       )}
 
       <div className={`
-        fixed inset-y-0 left-0 w-[85%] max-w-[300px] z-40 bg-surface-container flex flex-col
+        fixed inset-y-0 left-0 w-[280px] z-40 bg-surface-container-low flex flex-col rounded-r-[28px] shadow-elevation-1
         transform transition-transform duration-300 ease-emphasized
-        md:relative md:transform-none md:w-60 md:flex
+        md:relative md:transform-none md:flex
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         {/* Server Header */}
         <div
-          className="h-12 px-4 flex items-center justify-between border-b border-outline-variant/10 cursor-pointer hover:bg-surface-container-high transition-colors flex-shrink-0 relative"
+          className="h-16 px-6 flex items-center justify-between cursor-pointer hover:bg-on-surface/[0.04] transition-colors flex-shrink-0 relative"
           onClick={() => setShowServerMenu(!showServerMenu)}
           role="button"
-          aria-label="Server settings"
         >
           <h1 className="text-title-medium font-bold truncate text-on-surface">
             {server.name}
           </h1>
-          <span className={`material-symbols-outlined text-on-surface-variant text-[20px] transition-transform duration-200 ${showServerMenu ? 'rotate-180' : ''}`}>
+          <span className={`material-symbols-outlined text-on-surface-variant text-[24px] transition-transform duration-200 ${showServerMenu ? 'rotate-180' : ''}`}>
             expand_more
           </span>
 
@@ -149,7 +125,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           {showServerMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setShowServerMenu(false); }} />
-              <div className="absolute top-full left-2 right-2 mt-1 bg-surface-container-highest rounded-lg shadow-elevation-3 py-1.5 z-50 animate-scale-in">
+              <div className="absolute top-[56px] left-4 right-4 mt-1 bg-surface-container-highest rounded-[16px] shadow-elevation-3 py-2 z-50 animate-scale-in border border-outline-variant/10">
                 {[
                   { icon: 'rocket_launch', label: 'Server Boost' },
                   { icon: 'person_add', label: 'Invite People' },
@@ -160,16 +136,16 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                 ].map((item) => (
                   <button
                     key={item.label}
-                    className="w-full flex items-center px-3 py-2 text-body-medium text-on-surface hover:bg-primary hover:text-on-primary transition-colors"
+                    className="w-[calc(100%-16px)] mx-2 flex items-center h-12 px-3 rounded-[8px] text-body-medium text-on-surface hover:bg-primary-container hover:text-on-primary-container transition-colors"
                     onClick={(e) => { e.stopPropagation(); setShowServerMenu(false); }}
                   >
-                    <span className="material-symbols-outlined text-[18px] mr-3">{item.icon}</span>
+                    <span className="material-symbols-outlined text-[20px] mr-3">{item.icon}</span>
                     {item.label}
                   </button>
                 ))}
-                <div className="h-px bg-outline-variant/20 my-1" />
-                <button className="w-full flex items-center px-3 py-2 text-body-medium text-error hover:bg-error/10 transition-colors">
-                  <span className="material-symbols-outlined text-[18px] mr-3">logout</span>
+                <div className="m3-divider my-1" />
+                <button className="w-[calc(100%-16px)] mx-2 flex items-center h-12 px-3 rounded-[8px] text-body-medium text-error hover:bg-error/10 transition-colors">
+                  <span className="material-symbols-outlined text-[20px] mr-3 text-error">logout</span>
                   Leave Server
                 </button>
               </div>
@@ -177,27 +153,19 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           )}
         </div>
 
-        {/* Server Banner */}
-        {server.banner && (
-          <div className="h-[120px] w-full bg-cover bg-center relative flex-shrink-0 overflow-hidden" style={{ backgroundImage: `url(${server.banner})` }}>
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-container" />
-          </div>
-        )}
-
         {/* Channels List */}
-        <div className="flex-1 overflow-y-auto py-2 space-y-3 thin-scrollbar">
+        <div className="flex-1 overflow-y-auto py-2 space-y-4 thin-scrollbar">
           {server.categories.map(category => (
             <div key={category.id}>
               {/* Category Header */}
               <div
-                className="px-2 flex items-center justify-between cursor-pointer text-on-surface-variant hover:text-on-surface mb-0.5 group/cat py-1"
+                className="px-6 flex items-center justify-between cursor-pointer text-on-surface-variant hover:text-on-surface mb-1 group/cat py-1"
                 onClick={() => toggleCategory(category.id)}
                 role="button"
-                aria-expanded={!isCollapsed(category.id)}
               >
-                <div className="flex items-center text-[11px] font-bold uppercase tracking-wider">
+                <div className="flex items-center text-label-small font-bold uppercase tracking-widest">
                   <span
-                    className="material-symbols-outlined text-[12px] mr-0.5 transition-transform duration-200"
+                    className="material-symbols-outlined text-[14px] mr-1.5 transition-transform duration-200"
                     style={{ transform: isCollapsed(category.id) ? 'rotate(-90deg)' : 'rotate(0deg)' }}
                   >
                     expand_more
@@ -205,11 +173,10 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   {category.name}
                 </div>
                 <button
-                  className="opacity-0 group-hover/cat:opacity-100 transition-opacity p-0.5 hover:text-primary"
+                  className="opacity-0 group-hover/cat:opacity-100 transition-opacity p-1 hover:bg-on-surface/[0.08] rounded-full"
                   onClick={(e) => { e.stopPropagation(); }}
-                  aria-label={`Add channel to ${category.name}`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  <span className="material-symbols-outlined text-[18px]">add</span>
                 </button>
               </div>
 
@@ -226,54 +193,25 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
         </div>
 
         {/* User Bar */}
-        <div className="h-[52px] bg-surface-container-lowest px-2 flex items-center justify-between flex-shrink-0 border-t border-outline-variant/10">
-          <div className="flex items-center p-1 rounded-lg hover:bg-surface-container-high cursor-pointer group/user mr-auto max-w-[60%]">
+        <div className="bg-surface-container-high mx-3 mb-3 p-2 rounded-[20px] flex items-center justify-between flex-shrink-0 shadow-elevation-1">
+          <div className="flex items-center p-1 rounded-full hover:bg-on-surface/[0.08] cursor-pointer group/user mr-auto max-w-[65%]">
             <div className="relative flex-shrink-0">
-              <img src={CURRENT_USER.avatar} alt="Me" className="w-8 h-8 rounded-full" />
-              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-surface-container-lowest" />
+              <img src={CURRENT_USER.avatar} alt="Me" className="w-9 h-9 rounded-full border border-outline-variant/20" />
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-surface-container-high" />
             </div>
-            <div className="ml-2 overflow-hidden">
-              <div className="text-body-small font-medium truncate text-on-surface leading-tight">{CURRENT_USER.username}</div>
-              <div className="text-label-small text-on-surface-variant truncate leading-tight">Online</div>
+            <div className="ml-2.5 overflow-hidden">
+              <div className="text-label-medium font-bold truncate text-on-surface leading-tight">{CURRENT_USER.username}</div>
+              <div className="text-[10px] text-on-surface-variant truncate leading-tight">Online</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-0.5">
-            <button
-              onClick={toggleMute}
-              className={`p-1.5 rounded-full transition-colors ${
-                isMuted
-                  ? 'text-error hover:bg-error/10'
-                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-              }`}
-              aria-label={isMuted ? 'Unmute' : 'Mute'}
-              title={isMuted ? 'Unmute' : 'Mute'}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {isMuted ? 'mic_off' : 'mic'}
-              </span>
-            </button>
-            <button
-              onClick={toggleDeafen}
-              className={`p-1.5 rounded-full transition-colors ${
-                isDeafened
-                  ? 'text-error hover:bg-error/10'
-                  : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'
-              }`}
-              aria-label={isDeafened ? 'Undeafen' : 'Deafen'}
-              title={isDeafened ? 'Undeafen' : 'Deafen'}
-            >
-              <span className="material-symbols-outlined text-[20px]">
-                {isDeafened ? 'headset_off' : 'headset'}
-              </span>
-            </button>
+          <div className="flex items-center">
             <button
               onClick={onOpenSettings}
-              className="p-1.5 rounded-full text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"
+              className="w-10 h-10 rounded-full text-on-surface-variant hover:bg-on-surface/[0.08] hover:text-on-surface transition-all flex items-center justify-center"
               aria-label="User Settings"
-              title="User Settings"
             >
-              <span className="material-symbols-outlined text-[20px]">settings</span>
+              <span className="material-symbols-outlined text-[22px]">settings</span>
             </button>
           </div>
         </div>

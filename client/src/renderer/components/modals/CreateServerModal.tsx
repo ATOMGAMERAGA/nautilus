@@ -11,47 +11,46 @@ export const CreateServerModal: React.FC<CreateServerModalProps> = ({ onClose, o
 
   return (
     <ModalBackdrop onClose={onClose}>
-      <div className="p-6">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-on-surface mb-2">Create Your Server</h2>
-          <p className="text-on-surface-variant text-body-medium">
+      <div className="p-8">
+        <div className="text-center mb-8">
+          <h2 className="text-headline-small font-bold text-on-surface mb-3">Create Your Server</h2>
+          <p className="text-body-medium text-on-surface-variant leading-relaxed">
             Your server is where you and your friends hang out. Make yours and start talking.
           </p>
         </div>
 
         {/* Icon Upload Placeholder */}
-        <div className="flex justify-center mb-6">
-          <div className="w-24 h-24 rounded-full border-2 border-dashed border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:bg-surface-container-highest transition-colors">
-            <span className="material-symbols-outlined text-[32px] text-primary">add_a_photo</span>
+        <div className="flex justify-center mb-8">
+          <div className="w-24 h-24 rounded-[24px] bg-surface-container-highest border-2 border-dashed border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 hover:border-primary transition-all duration-200 group">
+            <span className="material-symbols-outlined text-[32px] text-primary group-hover:scale-110 transition-transform">add_a_photo</span>
             <span className="text-[10px] uppercase font-bold text-on-surface-variant mt-1">Upload</span>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-label-large font-bold text-on-surface-variant mb-1 uppercase text-xs">
-              Server Name
-            </label>
+        <div className="space-y-6">
+          <div className="m3-text-field">
             <input
               type="text"
               value={serverName}
               onChange={(e) => setServerName(e.target.value)}
-              placeholder="My Awesome Server"
-              className="w-full px-4 py-3 bg-surface-container-high rounded-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary transition-shadow"
+              placeholder=" "
+              className="m3-input"
               autoFocus
+              id="serverName"
             />
+            <label htmlFor="serverName" className="m3-input-label">Server Name</label>
           </div>
 
-          <div className="text-xs text-on-surface-variant">
-            By creating a server, you agree to Nautilus's <a href="#" className="text-primary hover:underline">Community Guidelines</a>.
-          </div>
+          <p className="text-body-small text-on-surface-variant text-center px-4 leading-normal italic opacity-80">
+            By creating a server, you agree to Nautilus's <a href="#" className="text-primary hover:underline font-bold">Community Guidelines</a>.
+          </p>
         </div>
       </div>
 
-      <div className="bg-surface-container p-4 flex justify-between items-center">
+      <div className="bg-surface-container-highest p-6 flex justify-between items-center gap-4 border-t border-outline-variant/10">
         <button 
           onClick={onClose}
-          className="text-on-surface hover:underline px-4 py-2 text-label-large"
+          className="m3-button-text flex-1"
         >
           Back
         </button>
@@ -63,7 +62,7 @@ export const CreateServerModal: React.FC<CreateServerModalProps> = ({ onClose, o
             }
           }}
           disabled={!serverName.trim()}
-          className="bg-primary text-on-primary px-8 py-2.5 rounded-full font-medium hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-elevation-1"
+          className="m3-button-filled flex-[2] !h-12"
         >
           Create
         </button>
