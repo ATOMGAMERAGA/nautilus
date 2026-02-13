@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { api } from '../services/api';
 import { secureStorage } from '../services/secureStorage';
+import { isNative } from '../services/platform';
+import { initPushNotifications } from '../services/pushNotifications';
 
 interface User {
   id: string;
@@ -36,6 +38,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const res = await api.post('/auth/login', { username, password });
       await secureStorage.setTokens(res.data.access_token, res.data.refresh_token);
       set({ user: res.data.user, isAuthenticated: true });
+      if (isNative) initPushNotifications();
     } catch (err: any) {
       set({ error: err.response?.data?.error || 'Login failed' });
       throw err;

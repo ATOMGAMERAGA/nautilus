@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { updateStatusBarForTheme } from '../services/mobileInit';
+import { isNative } from '../services/platform';
 
 type Theme = 'dark' | 'light' | 'contrast';
 
@@ -12,6 +14,9 @@ export const useThemeStore = create<ThemeState>((set) => ({
   setTheme: (theme) => {
     localStorage.setItem('theme', theme);
     document.documentElement.setAttribute('data-theme', theme);
+    if (isNative) {
+      updateStatusBarForTheme(theme);
+    }
     set({ theme });
   },
 }));

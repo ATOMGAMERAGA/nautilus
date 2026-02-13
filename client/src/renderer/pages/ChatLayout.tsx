@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { useAuthStore } from '../store/authStore';
 import { gateway } from '../services/gateway';
+import { secureStorage } from '../services/secureStorage';
+import { isNative } from '../services/platform';
 import { Hash, Volume2, Settings, Plus, Smile, Gift, Search, Bell, ShieldAlert, Lock } from 'lucide-react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { api } from '../services/api';
@@ -37,8 +39,9 @@ export function ChatLayout() {
 
   useEffect(() => {
     fetchGuilds();
-    const token = localStorage.getItem('access_token');
-    if (token) gateway.connect(token);
+    secureStorage.getAccessToken().then(token => {
+      if (token) gateway.connect(token);
+    });
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -102,7 +105,7 @@ export function ChatLayout() {
   };
 
   return (
-    <div className="flex h-screen bg-background-tertiary overflow-hidden">
+    <div className={`flex h-screen bg-background-tertiary overflow-hidden${isNative ? ' native-app' : ''}`}>
       {showSearch && currentGuild && <SearchModal guildId={currentGuild.id} onClose={() => setShowSearch(false)} />}
       {showSwitcher && <QuickSwitcher onClose={() => setShowSwitcher(false)} />}
       {showGuildSettings && currentGuild && <GuildSettingsModal guildId={currentGuild.id} onClose={() => setShowGuildSettings(false)} />}

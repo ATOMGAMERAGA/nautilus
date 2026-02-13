@@ -1,5 +1,6 @@
 import * as mediasoupClient from 'mediasoup-client';
 import { gateway } from './gateway';
+import { isAndroid } from './platform';
 
 class VoiceController {
   device: mediasoupClient.types.Device;
@@ -57,9 +58,13 @@ class VoiceController {
   }
 
   async startScreenShare(roomId: string) {
+    if (isAndroid) {
+      console.warn('Screen sharing is not supported on Android WebView');
+      return undefined;
+    }
+
     try {
       const stream = await (navigator.mediaDevices as any).getDisplayMedia({ video: true });
-      // Screen share is also 'video' kind in mediasoup
       await this.produce('video', stream, roomId);
       return stream;
     } catch (err) {
