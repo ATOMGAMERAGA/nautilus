@@ -35,7 +35,10 @@ export const guildController = {
 
       return reply.status(201).send(guild);
     } catch (error) {
-      if (error instanceof z.ZodError) return reply.status(400).send({ error: (error as any).errors });
+      if (error instanceof z.ZodError) {
+        const message = (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        return reply.status(400).send({ error: message });
+      }
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
   },

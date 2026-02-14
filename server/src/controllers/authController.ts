@@ -8,13 +8,13 @@ import { z } from 'zod';
 const registerSchema = z.object({
   username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/),
   password: z.string().min(8),
-  display_name: z.string().min(1).max(32).optional(),
-  birth_date: z.string().datetime().optional(),
+  display_name: z.string().max(32).optional().or(z.literal('')),
+  birth_date: z.string().optional().or(z.literal('')),
 });
 
 const loginSchema = z.object({
-  username: z.string(),
-  password: z.string(),
+  username: z.string().min(1, 'Username is required'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 export const authController = {
@@ -36,7 +36,6 @@ export const authController = {
           username,
           password_hash,
           display_name: display_name || username,
-          // birth_date logic can be added to schema if needed, for now using updated_at as placeholder for demonstration of creation
         },
       });
 
@@ -80,7 +79,8 @@ export const authController = {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.status(400).send({ error: (error as any).errors });
+        const message = (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        return reply.status(400).send({ error: message });
       }
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
@@ -135,7 +135,8 @@ export const authController = {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.status(400).send({ error: (error as any).errors });
+        const message = (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        return reply.status(400).send({ error: message });
       }
       return reply.status(500).send({ error: 'Internal Server Error' });
     }

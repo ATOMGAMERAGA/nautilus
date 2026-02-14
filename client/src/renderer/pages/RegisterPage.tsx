@@ -16,6 +16,10 @@ export function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ack) return;
+    if (formData.password.length < 8) {
+      // In a real app we might set a local error state
+      return;
+    }
     await register(formData);
   };
 
