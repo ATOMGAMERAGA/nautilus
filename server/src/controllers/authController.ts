@@ -20,16 +20,24 @@ const loginSchema = z.object({
 export const authController = {
   register: async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      request.log.info('Registration started');
       const { username, password, display_name, birth_date } = registerSchema.parse(request.body);
+      request.log.info({ username }, 'Registration schema parsed');
 
       const existingUser = await prisma.users.findUnique({ where: { username } });
       if (existingUser) {
+        request.log.warn({ username }, 'Username already taken');
         return reply.status(409).send({ error: 'Username already taken' });
       }
 
+      request.log.info('Hashing password...');
       const password_hash = await argon2.hash(password);
+      
+      request.log.info('Generating user ID...');
       const user_id = await generateUserId();
+      request.log.info({ user_id: user_id.toString() }, 'User ID generated');
 
+      request.log.info('Creating user in database...');
       const user = await prisma.users.create({
         data: {
           user_id,
@@ -38,14 +46,17 @@ export const authController = {
           display_name: display_name || username,
         },
       });
+      request.log.info({ id: user.id }, 'User created');
 
-      // Create default settings
+      request.log.info('Creating default user settings...');
       await prisma.user_settings.create({
         data: {
           user_id: user.id,
         },
       });
+      request.log.info('User settings created');
 
+      request.log.info('Signing tokens...');
       const accessToken = jwt.sign(
         { sub: user.id, username: user.username, user_id: Number(user.user_id) },
         process.env.JWT_SECRET as jwt.Secret,
@@ -58,6 +69,7 @@ export const authController = {
         { expiresIn: process.env.JWT_REFRESH_EXPIRES || '7d' } as jwt.SignOptions
       );
 
+      request.log.info('Hashing refresh token and saving...');
       const tokenHash = await argon2.hash(refreshToken);
       await prisma.refresh_tokens.create({
         data: {
@@ -66,7 +78,9 @@ export const authController = {
           expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         },
       });
+      request.log.info('Refresh token saved');
 
+      request.log.info('Registration successful');
       return reply.status(201).send({
         user: {
           id: user.id,
@@ -77,14 +91,15 @@ export const authController = {
         access_token: accessToken,
         refresh_token: refreshToken,
       });
-    } catch (error) {
+    } catch (error: any) {
+      request.log.error(error, 'Registration error occurred');
       if (error instanceof z.ZodError) {
         const issues = error.issues || [];
         const message = issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
         request.log.warn({ issues: error.issues }, `Validation failed: ${message}`);
         return reply.status(400).send({ error: message || 'Validation failed' });
       }
-      return reply.status(500).send({ error: 'Internal Server Error' });
+      return reply.status(500).send({ error: error.message || 'Internal Server Error' });
     }
   },
 
