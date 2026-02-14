@@ -8,8 +8,8 @@ import { z } from 'zod';
 const registerSchema = z.object({
   username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/),
   password: z.string().min(8),
-  display_name: z.string().max(32).optional().or(z.literal('')),
-  birth_date: z.string().optional().or(z.literal('')),
+  display_name: z.string().max(32).nullable().optional().or(z.literal('')),
+  birth_date: z.string().nullable().optional().or(z.literal('')),
 });
 
 const loginSchema = z.object({
