@@ -50,6 +50,11 @@ async function main() {
         timeWindow: '1 minute',
     });
     await (0, gateway_1.setupWebsocket)(fastify);
+    // Debug route for root POST requests
+    fastify.post('/', async (request, reply) => {
+        request.log.warn('Received POST to root (/). Check client API URL configuration.');
+        return reply.status(404).send({ error: 'Route not found. Ensure your API URL ends with /api' });
+    });
     await fastify.register(health_1.healthRoutes, { prefix: '/api' });
     await fastify.register(auth_1.authRoutes, { prefix: '/api/auth' });
     await fastify.register(guilds_1.guildRoutes, { prefix: '/api/guilds' });
