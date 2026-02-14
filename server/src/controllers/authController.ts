@@ -81,6 +81,7 @@ export const authController = {
       if (error instanceof z.ZodError) {
         const issues = error.issues || [];
         const message = issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        request.log.warn({ issues: error.issues }, `Validation failed: ${message}`);
         return reply.status(400).send({ error: message || 'Validation failed' });
       }
       return reply.status(500).send({ error: 'Internal Server Error' });
@@ -138,6 +139,7 @@ export const authController = {
       if (error instanceof z.ZodError) {
         const issues = error.issues || [];
         const message = issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        request.log.warn({ issues: error.issues }, `Validation failed: ${message}`);
         return reply.status(400).send({ error: message || 'Validation failed' });
       }
       return reply.status(500).send({ error: 'Internal Server Error' });
