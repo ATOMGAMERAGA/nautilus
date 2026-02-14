@@ -36,8 +36,9 @@ export const guildController = {
       return reply.status(201).send(guild);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const message = (error as any).errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
-        return reply.status(400).send({ error: message });
+        const issues = error.issues || [];
+        const message = issues.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ');
+        return reply.status(400).send({ error: message || 'Validation failed' });
       }
       return reply.status(500).send({ error: 'Internal Server Error' });
     }
